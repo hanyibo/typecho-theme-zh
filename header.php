@@ -181,6 +181,7 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <link rel="stylesheet" href="<?php $options->themeUrl('/assets/css/style.css'); ?>">
 <?php if ($zh_load_prism): ?>
 <link rel="stylesheet" href="<?php $options->themeUrl('/assets/vendor/prism/prism-okaidia.min.css'); ?>">
+<script src="<?php $options->themeUrl('/assets/vendor/prism/prism-bundle.min.js'); ?>" defer></script>
 <?php endif; ?>
 <?php echo trim((string) $options->customHead); ?>
 </head>
