@@ -8,7 +8,7 @@
  * @package ZH
  * @author hanyb
  * @version 1.0.0
- * @link https://github.com/hanyb
+ * @link https://www.hanyibo.com
  */
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
