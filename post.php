@@ -18,7 +18,7 @@ $this->need('header.php');
         </header>
 
         <div class="zh-content">
-            <?php if (zh_cache_start('post')): else: ?><?php $this->content(); ?><?php zh_cache_end(); endif; ?>
+            <?php if (zh_cache_start('post', $this)): else: ?><?php $this->content(); ?><?php zh_cache_end(); endif; ?>
         </div>
 
         <footer class="zh-post-foot">

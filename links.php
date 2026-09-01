@@ -13,7 +13,7 @@ $this->need('header.php');
 $zh_links = zh_parse_lines((string) $this->options->friendLinks, 2);
 ?>
 <main class="zh-main" id="main">
-    <?php if (zh_cache_start('page')): else: ?>
+    <?php if (zh_cache_start('page', $this)): else: ?>
     <header class="zh-page-head">
         <h1 class="zh-page-title"><?php $this->title() ?></h1>
         <?php if (!empty($zh_links)): ?>

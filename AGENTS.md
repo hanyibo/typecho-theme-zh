@@ -26,10 +26,11 @@
 
 ## 页面缓存（zh_cache_*，functions.php 末尾）
 
-- 模板接入方式：`<?php if (zh_cache_start('<scope>')): else: ?>` … 缓存区域 … `<?php zh_cache_end(); endif; ?>`。scope 取值 `index`/`archive`/`post`/`page`，对应四个独立外观设置开关（`cacheIndex`/`cacheArchive`/`cachePost`/`cachePage`，默认全关）。
+- 模板接入方式：单页模板传 `$this`（post/page 及三个自定义页面模板），列表模板在行循环第一行调 `zh_cache_protect_row($this)`：`<?php if (zh_cache_start('post', $this)): else: ?>` … `<?php zh_cache_end(); endif; ?>`。scope 取值 `index`/`archive`/`post`/`page`，对应四个独立外观设置开关（`cacheIndex`/`cacheArchive`/`cachePost`/`cachePage`，默认全关）。
 - **缓存区域必须排除评论区与评论表单**（comments.php 永远在缓存区外实时渲染）；登录用户、非 GET 请求自动跳过。
-- 失效机制靠 `zh_cache_fingerprint()` 内容指纹（文章篇数/modified、评论总数、分类标签、页面 modified、主题设置快照），**不使用编辑钩子**——Typecho 1.3 后台请求不加载主题 functions.php，钩子注册不可靠（已查证源码：仅 `Widget\Archive::execute()` 前端渲染时加载）。
-- 缓存文件写在 `usr/cache/ZH-theme/`（勿提交到 git）；新增开关或新增影响页面输出的设置项时，记得同步更新指纹的 `theme=` 哈希输入。
+- **密码保护内容绝不落盘**：渲染依赖访客密码 Cookie，持密码访客一次 GET 即可把解锁正文写入共享缓存。单页靠 `zh_cache_start()` 第二参数整页跳过；列表靠 `zh_cache_protect_row()` 让 `zh_cache_end()` 只输出不存储。新增模板接入缓存时必须保留这两道防线。
+- 失效机制靠 `zh_cache_fingerprint()` 内容指纹（文章篇数、SUM(modified)、评论总数、分类标签、SUM(pages modified)、主题设置快照），**不使用编辑钩子**——Typecho 1.3 后台请求不加载主题 functions.php，钩子注册不可靠（已查证源码：仅 `Widget\Archive::execute()` 前端渲染时加载）。
+- 缓存文件写在 `usr/cache/ZH-theme/`（勿提交到 git；运行时自动写入 `.htaccess`/空 `index.html` 防直访，`zh_cache_gc()` 低频清理过期文件）；新增开关或新增影响页面输出的设置项时，记得同步更新指纹的 `theme=` 哈希输入。
 
 ## Typecho 陷阱
 

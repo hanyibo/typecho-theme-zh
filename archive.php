@@ -22,6 +22,7 @@ $zh_arch_name = trim(ob_get_clean());
     <?php if ($this->have()): ?>
     <div class="zh-post-list">
         <?php while ($this->next()): ?>
+        <?php zh_cache_protect_row($this); ?>
         <article class="zh-card">
             <a class="zh-card-thumb" href="<?php $this->permalink() ?>" aria-hidden="true" tabindex="-1"><?php zh_thumb($this); ?></a>
             <div class="zh-card-body">

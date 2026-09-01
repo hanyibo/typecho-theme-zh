@@ -9,7 +9,7 @@ $this->need('header.php');
         </header>
 
         <div class="zh-content">
-            <?php if (zh_cache_start('page')): else: ?><?php $this->content(); ?><?php zh_cache_end(); endif; ?>
+            <?php if (zh_cache_start('page', $this)): else: ?><?php $this->content(); ?><?php zh_cache_end(); endif; ?>
         </div>
 
         <?php $this->need('comments.php'); ?>

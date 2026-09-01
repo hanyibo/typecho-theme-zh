@@ -456,9 +456,14 @@ function zh_parse_lines($raw, $minParts = 2)
  * 以文件方式缓存模板中 <main> 区域的输出（参考 rizhi 主题的 StartCache/EndCache 思路）。
  *
  * 与 rizhi 直接按 REQUEST_URI 哈希 + 定时过期不同，这里在命中时先校验
- * 「内容指纹」：全站文章篇数、最后修改时间、评论总数、分类/标签变动序号
+ * 「内容指纹」：全站文章篇数、modified 之和、评论总数、分类/标签变动序号
  * 以及主题设置快照。任何内容变更都会让指纹变化，下一次访问即重建缓存，
  * 无需依赖 Typecho 编辑钩子（后台请求不加载主题 functions.php，钩子不可靠）。
+ *
+ * 密码保护内容绝不缓存：渲染结果依赖请求方的密码 Cookie，持密码访客触发
+ * 一次 GET 就会把解锁正文写进缓存，等于对外公开全文。单页模板通过
+ * zh_cache_start() 的 $widget 参数整页跳过缓存；列表模板在行循环里用
+ * zh_cache_protect_row() 标记本次渲染只输出不落盘。
  *
  * 用法（模板内）：
  *   if (zh_cache_start('post', $this)): ... 正常输出 ... <?php endif; ?>
@@ -505,9 +510,10 @@ function zh_cache_ttl()
 
 /**
  * 内容指纹：把影响页面输出的全站性数据压缩成一个短哈希。
- * 文章新增/编辑/删除会改变 modified 或篇数；评论增删改审核会改变
- * commentsNum 之和（Typecho 会同步 contents.commentsNum）；分类、
- * 标签、菜单、主题设置变化会改变 option 值。
+ * modified 用 SUM 而非 MAX：编辑任意一篇（不限最新修改的）文章/页面
+ * 都会改变总和，指纹随即失效。
+ * 评论增删改审核会改变 commentsNum 之和（Typecho 会同步
+ * contents.commentsNum）；分类、标签、菜单、主题设置变化会改变 option 值。
  */
 function zh_cache_fingerprint()
 {
@@ -518,7 +524,7 @@ function zh_cache_fingerprint()
 
     $db = \Typecho\Db::get();
 
-    $posts = $db->fetchRow($db->select(array('COUNT(cid)' => 'cnt', 'MAX(modified)' => 'mtime'))
+    $posts = $db->fetchRow($db->select(array('COUNT(cid)' => 'cnt', 'SUM(modified)' => 'mtime'))
         ->from('table.contents')
         ->where('type = ? AND status = ?', 'post', 'publish'));
 
@@ -530,7 +536,7 @@ function zh_cache_fingerprint()
         ->from('table.metas'));
 
     // 独立页面（关于页、自定义模板页等）的修改时间
-    $pages = $db->fetchRow($db->select(array('MAX(modified)' => 'mtime'))
+    $pages = $db->fetchRow($db->select(array('SUM(modified)' => 'mtime'))
         ->from('table.contents')
         ->where('type = ?', 'page'));
 
@@ -568,10 +574,17 @@ function zh_cache_path($scope)
  * 尝试输出缓存；命中返回 true（模板应跳过区域渲染），
  * 未命中开启输出缓冲并返回 false（模板继续正常渲染，结尾调 zh_cache_end）。
  * 仅缓存 GET 请求；POST（提交评论等）一律实时渲染。
+ *
+ * $widget 传 single 模板的 $this（Widget\Archive）：当前内容为密码保护时
+ * 直接实时渲染，完全不读写缓存，避免持密码访客把解锁正文写入共享缓存。
  */
-function zh_cache_start($scope)
+function zh_cache_start($scope, $widget = null)
 {
     if (!zh_cache_enabled($scope) || ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+        return false;
+    }
+
+    if ($widget !== null && strlen((string) $widget->password) > 0) {
         return false;
     }
 
@@ -586,7 +599,16 @@ function zh_cache_start($scope)
 
     ob_start();
     $GLOBALS['zh_cache_scope'] = $scope;
+    $GLOBALS['zh_cache_nostore'] = false;
     return false;
+}
+
+/** 列表行渲染时调用：该行为密码保护内容则标记本次缓存区域不落盘 */
+function zh_cache_protect_row($widget)
+{
+    if (strlen((string) $widget->password) > 0) {
+        $GLOBALS['zh_cache_nostore'] = true;
+    }
 }
 
 /** 结束缓存区域：把缓冲内容落盘并输出 */
@@ -605,10 +627,25 @@ function zh_cache_end()
 
     echo $content;
 
+    /* 本次渲染依赖请求方 Cookie（密码保护内容）时只输出不落盘 */
+    $nostore = !empty($GLOBALS['zh_cache_nostore']);
+    unset($GLOBALS['zh_cache_nostore']);
+    if ($nostore) {
+        return;
+    }
+
     $dir = ZH_CACHE_DIR;
     if (!is_dir($dir)) {
         @mkdir($dir, 0755, true);
     }
+    /* 缓存目录在 usr/ 之下可被 Web 直接访问，用规则文件兜底（nginx 用户需自行 deny） */
+    if (is_dir($dir) && !is_file($dir . '.htaccess')) {
+        @file_put_contents($dir . '.htaccess',
+            "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n"
+            . "<IfModule !mod_authz_core.c>\nOrder allow,deny\nDeny from all\n</IfModule>\n");
+        @file_put_contents($dir . 'index.html', '');
+    }
+
     $tmp = tempnam($dir, 'w');
     if ($tmp !== false) {
         file_put_contents($tmp, $content);
@@ -618,6 +655,25 @@ function zh_cache_end()
             @unlink($dest);
         }
         @rename($tmp, $dest); // 原子替换，避免并发写坏文件
+
+        /* 低频 GC：清理超过 TTL 的陈旧缓存，防止搜索页等不可枚举 URL 无限累积 */
+        if (mt_rand(1, 100) === 1) {
+            zh_cache_gc();
+        }
+    }
+}
+
+/** 删除超过 TTL 的缓存文件（不删仍在有效期内、可正常命中的文件） */
+function zh_cache_gc()
+{
+    if (!is_dir(ZH_CACHE_DIR)) {
+        return;
+    }
+    $expire = time() - zh_cache_ttl();
+    foreach (glob(ZH_CACHE_DIR . '*.html') ?: array() as $file) {
+        if (is_file($file) && (int) filemtime($file) < $expire) {
+            @unlink($file);
+        }
     }
 }
 

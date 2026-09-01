@@ -10,7 +10,7 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 
-if (!zh_cache_start('page')):
+if (!zh_cache_start('page', $this)):
 $zh_groups = array();
 $zh_total = 0;
 $this->widget('\Widget\Contents\Post\Recent@zharclist', 'pageSize=10000')->to($zh_posts);
