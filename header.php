@@ -28,6 +28,10 @@ $zh_nav_categories = isset($zh_pagesMap['categories'])
 $zh_nav_about = isset($zh_pagesMap['about'])
     ? $zh_pagesMap['about']
     : (trim((string) $options->aboutUrl) !== '' ? trim((string) $options->aboutUrl) : '/about.html');
+/* 「友链」与上不同：页面 slug 与设置均未提供时不显示导航项，避免死链 */
+$zh_nav_links = isset($zh_pagesMap['links'])
+    ? $zh_pagesMap['links']
+    : (trim((string) $options->linksUrl) !== '' ? trim((string) $options->linksUrl) : '');
 
 $zh_extra_nav = zh_parse_lines((string) $options->extraNav);
 
@@ -106,6 +110,11 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <meta name="robots" content="noindex, follow">
 <?php endif; ?>
 <link rel="canonical" href="<?php echo htmlspecialchars($zh_canonical, ENT_QUOTES, 'UTF-8'); ?>">
+
+<?php $zh_favicon = zh_safe_url(trim((string) $options->faviconUrl)); ?>
+<?php if ($zh_favicon !== '#'): ?>
+<link rel="icon" href="<?php echo htmlspecialchars($zh_favicon, ENT_QUOTES, 'UTF-8'); ?>">
+<?php endif; ?>
 
 <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f1216" media="(prefers-color-scheme: dark)">
@@ -210,6 +219,11 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
                 <li class="zh-item<?php echo zh_nav_active($zh_nav_about) ? ' active' : ''; ?>">
                     <a href="<?php echo htmlspecialchars(zh_safe_url($zh_nav_about), ENT_QUOTES, 'UTF-8'); ?>">关于</a>
                 </li>
+                <?php if ($zh_nav_links !== ''): ?>
+                <li class="zh-item<?php echo zh_nav_active($zh_nav_links) ? ' active' : ''; ?>">
+                    <a href="<?php echo htmlspecialchars(zh_safe_url($zh_nav_links), ENT_QUOTES, 'UTF-8'); ?>">友链</a>
+                </li>
+                <?php endif; ?>
                 <?php foreach ($zh_extra_nav as $zh_extra): ?>
                 <li class="zh-item<?php echo zh_nav_active($zh_extra[1]) ? ' active' : ''; ?>">
                     <a href="<?php echo htmlspecialchars(zh_safe_url($zh_extra[1]), ENT_QUOTES, 'UTF-8'); ?>"<?php if (preg_match('#^https?://#i', $zh_extra[1])): ?> target="_blank" rel="noopener"<?php endif; ?>><?php echo htmlspecialchars($zh_extra[0], ENT_QUOTES, 'UTF-8'); ?></a>

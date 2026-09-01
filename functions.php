@@ -20,6 +20,15 @@ function themeConfig($form)
     );
     $form->addInput($defaultThumb->addRule('url', _t('请填写合法的图片地址，或留空')));
 
+    $faviconUrl = new \Typecho\Widget\Helper\Form\Element\Text(
+        'faviconUrl',
+        null,
+        '',
+        _t('Favicon 图标地址'),
+        _t('浏览器标签页图标，ico / png / svg 均可；留空则不输出，浏览器会尝试站点根目录的 /favicon.ico')
+    );
+    $form->addInput($faviconUrl->addRule('url', _t('请填写合法的图标地址，或留空')));
+
     $seoDescription = new \Typecho\Widget\Helper\Form\Element\Text(
         'seoDescription',
         null,
@@ -64,6 +73,15 @@ function themeConfig($form)
         _t('导航「关于」指向的地址；若已创建 slug 为 about 的页面会自动识别')
     );
     $form->addInput($aboutUrl);
+
+    $linksUrl = new \Typecho\Widget\Helper\Form\Element\Text(
+        'linksUrl',
+        null,
+        '',
+        _t('「友链」页链接'),
+        _t('导航「友链」指向的地址；若已创建 slug 为 links 的页面会自动识别。页面与此处均未设置时导航不显示「友链」入口')
+    );
+    $form->addInput($linksUrl);
 
     $friendLinks = new \Typecho\Widget\Helper\Form\Element\Textarea(
         'friendLinks',
@@ -528,6 +546,8 @@ function zh_cache_fingerprint()
             $options->friendLinks,
             $options->extraNav,
             $options->defaultThumb,
+            $options->faviconUrl,
+            $options->linksUrl,
             $options->icp,
             $options->footerText,
         ))),
