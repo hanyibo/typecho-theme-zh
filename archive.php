@@ -13,6 +13,7 @@ $this->archiveTitle(array(
 $zh_arch_name = trim(ob_get_clean());
 ?>
 <main class="zh-main" id="main">
+    <?php if (zh_cache_start('archive')): else: ?>
     <header class="zh-page-head">
         <h1 class="zh-page-title"><?php echo $zh_arch_name !== '' ? htmlspecialchars($zh_arch_name, ENT_QUOTES, 'UTF-8') : '归档'; ?></h1>
         <p class="zh-page-sub">共 <?php echo (int) $this->getTotal(); ?> 篇<?php echo $this->is('search') ? ' 相关内容' : ' 文章'; ?></p>
@@ -44,5 +45,6 @@ $zh_arch_name = trim(ob_get_clean());
     <?php endif; ?>
 
     <?php $this->pageNav('‹', '›'); ?>
+    <?php zh_cache_end(); endif; ?>
 </main>
 <?php $this->need('footer.php'); ?>

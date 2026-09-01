@@ -27,7 +27,13 @@ function threadedComments($comments, $options)
     echo '<div class="zh-comment-main">';
     echo '<div class="zh-comment-meta">';
     if ($comments->url) {
-        echo '<a class="zh-comment-author" href="' . htmlspecialchars((string) $comments->url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener nofollow">' . htmlspecialchars((string) $comments->author, ENT_QUOTES, 'UTF-8') . '</a>';
+        /* 评论者填写的网址属于不可信输入，过滤危险协议后再生成为链接 */
+        $zh_safe = zh_safe_url((string) $comments->url);
+        if ($zh_safe !== '#') {
+            echo '<a class="zh-comment-author" href="' . htmlspecialchars($zh_safe, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener nofollow">' . htmlspecialchars((string) $comments->author, ENT_QUOTES, 'UTF-8') . '</a>';
+        } else {
+            echo '<span class="zh-comment-author">' . htmlspecialchars((string) $comments->author, ENT_QUOTES, 'UTF-8') . '</span>';
+        }
     } else {
         echo '<span class="zh-comment-author">' . htmlspecialchars((string) $comments->author, ENT_QUOTES, 'UTF-8') . '</span>';
     }

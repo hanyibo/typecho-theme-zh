@@ -10,6 +10,7 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 
+if (!zh_cache_start('page')):
 $zh_groups = array();
 $zh_total = 0;
 $this->widget('\Widget\Contents\Post\Recent@zharclist', 'pageSize=10000')->to($zh_posts);
@@ -53,5 +54,6 @@ krsort($zh_groups);
     </section>
     <?php endforeach; ?>
     <?php endif; ?>
+    <?php zh_cache_end(); endif; ?>
 </main>
 <?php $this->need('footer.php'); ?>

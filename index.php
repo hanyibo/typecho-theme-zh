@@ -14,6 +14,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 ?>
 <main class="zh-main" id="main">
+    <?php if (zh_cache_start('index')): else: ?>
     <?php if ($this->have()): ?>
     <div class="zh-post-list">
         <?php while ($this->next()): ?>
@@ -40,5 +41,6 @@ $this->need('header.php');
     <?php endif; ?>
 
     <?php $this->pageNav('‹', '›'); ?>
+    <?php zh_cache_end(); endif; ?>
 </main>
 <?php $this->need('footer.php'); ?>

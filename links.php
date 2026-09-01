@@ -13,6 +13,7 @@ $this->need('header.php');
 $zh_links = zh_parse_lines((string) $this->options->friendLinks, 2);
 ?>
 <main class="zh-main" id="main">
+    <?php if (zh_cache_start('page')): else: ?>
     <header class="zh-page-head">
         <h1 class="zh-page-title"><?php $this->title() ?></h1>
         <?php if (!empty($zh_links)): ?>
@@ -25,7 +26,7 @@ $zh_links = zh_parse_lines((string) $this->options->friendLinks, 2);
     <?php else: ?>
     <div class="zh-links-grid">
         <?php foreach ($zh_links as $zh_link): ?>
-        <a class="zh-link-card" href="<?php echo htmlspecialchars($zh_link[1], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+        <a class="zh-link-card" href="<?php echo htmlspecialchars(zh_safe_url($zh_link[1]), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
             <span class="zh-link-avatar" aria-hidden="true"><?php echo htmlspecialchars(zh_first_char($zh_link[0]), ENT_QUOTES, 'UTF-8'); ?></span>
             <span class="zh-link-info">
                 <span class="zh-link-name"><?php echo htmlspecialchars($zh_link[0], ENT_QUOTES, 'UTF-8'); ?></span>
@@ -41,5 +42,6 @@ $zh_links = zh_parse_lines((string) $this->options->friendLinks, 2);
     <?php if (trim((string) $this->content) !== ''): ?>
     <div class="zh-content zh-page-content"><?php $this->content(); ?></div>
     <?php endif; ?>
+    <?php zh_cache_end(); endif; ?>
 </main>
 <?php $this->need('footer.php'); ?>

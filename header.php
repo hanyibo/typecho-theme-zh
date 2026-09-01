@@ -87,6 +87,9 @@ if ($zh_page > 1) {
 
 $zh_canonical = zh_current_url($this);
 $zh_is_post = $zh_is_single && !$this->is('page');
+
+/* 代码高亮资源按需加载：正文包含 <pre> 代码块时才输出 Prism（文章与独立页面） */
+$zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== false;
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
@@ -167,7 +170,7 @@ $zh_is_post = $zh_is_single && !$this->is('page');
 })();
 </script>
 <link rel="stylesheet" href="<?php $options->themeUrl('/assets/css/style.css'); ?>">
-<?php if ($zh_is_post): ?>
+<?php if ($zh_load_prism): ?>
 <link rel="stylesheet" href="<?php $options->themeUrl('/assets/vendor/prism/prism-okaidia.min.css'); ?>">
 <?php endif; ?>
 <?php echo trim((string) $options->customHead); ?>
@@ -177,7 +180,11 @@ $zh_is_post = $zh_is_single && !$this->is('page');
 
 <header class="zh-header" id="zh-header">
     <div class="zh-header-inner">
+        <?php if ($zh_is_index): ?>
+        <h1 class="zh-brand"><a href="<?php $options->siteUrl(); ?>"><?php $options->title(); ?></a></h1>
+        <?php else: ?>
         <a class="zh-brand" href="<?php $options->siteUrl(); ?>"><?php $options->title(); ?></a>
+        <?php endif; ?>
 
         <nav class="zh-nav" id="zh-nav" aria-label="主导航">
             <ul class="zh-menu">
@@ -185,7 +192,7 @@ $zh_is_post = $zh_is_single && !$this->is('page');
                     <a href="<?php $options->siteUrl(); ?>">首页</a>
                 </li>
                 <li class="zh-item zh-has-sub<?php echo $this->is('category') || zh_nav_active($zh_nav_categories) ? ' active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($zh_nav_categories, ENT_QUOTES, 'UTF-8'); ?>">分类<svg class="zh-caret" viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+                    <a href="<?php echo htmlspecialchars(zh_safe_url($zh_nav_categories), ENT_QUOTES, 'UTF-8'); ?>">分类<svg class="zh-caret" viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
                     <ul class="zh-submenu">
                         <?php $this->widget('\Widget\Metas\Category\Rows@zhnav')->to($zh_cats); ?>
                         <?php if ($zh_cats->have()): ?>
@@ -198,14 +205,14 @@ $zh_is_post = $zh_is_single && !$this->is('page');
                     </ul>
                 </li>
                 <li class="zh-item<?php echo zh_nav_active($zh_nav_archives) ? ' active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($zh_nav_archives, ENT_QUOTES, 'UTF-8'); ?>">归档</a>
+                    <a href="<?php echo htmlspecialchars(zh_safe_url($zh_nav_archives), ENT_QUOTES, 'UTF-8'); ?>">归档</a>
                 </li>
                 <li class="zh-item<?php echo zh_nav_active($zh_nav_about) ? ' active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($zh_nav_about, ENT_QUOTES, 'UTF-8'); ?>">关于</a>
+                    <a href="<?php echo htmlspecialchars(zh_safe_url($zh_nav_about), ENT_QUOTES, 'UTF-8'); ?>">关于</a>
                 </li>
                 <?php foreach ($zh_extra_nav as $zh_extra): ?>
                 <li class="zh-item<?php echo zh_nav_active($zh_extra[1]) ? ' active' : ''; ?>">
-                    <a href="<?php echo htmlspecialchars($zh_extra[1], ENT_QUOTES, 'UTF-8'); ?>"<?php if (preg_match('#^https?://#i', $zh_extra[1])): ?> target="_blank" rel="noopener"<?php endif; ?>><?php echo htmlspecialchars($zh_extra[0], ENT_QUOTES, 'UTF-8'); ?></a>
+                    <a href="<?php echo htmlspecialchars(zh_safe_url($zh_extra[1]), ENT_QUOTES, 'UTF-8'); ?>"<?php if (preg_match('#^https?://#i', $zh_extra[1])): ?> target="_blank" rel="noopener"<?php endif; ?>><?php echo htmlspecialchars($zh_extra[0], ENT_QUOTES, 'UTF-8'); ?></a>
                 </li>
                 <?php endforeach; ?>
             </ul>

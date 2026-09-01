@@ -3,7 +3,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /** @var Widget_Archive $this */
 
 $zh_options = $this->options;
-$zh_is_post = $this->is('single') && !$this->is('page');
+/* $zh_load_prism 在 header.php 中按「正文是否包含 <pre>」计算；此处兜底防止单独引用 */
+$zh_load_prism = isset($zh_load_prism) && $zh_load_prism;
 $zh_icp = trim((string) $zh_options->icp);
 $zh_footer_text = trim((string) $zh_options->footerText);
 ?>
@@ -35,7 +36,7 @@ $zh_footer_text = trim((string) $zh_options->footerText);
 </button>
 
 <script src="<?php $zh_options->themeUrl('/assets/js/main.js'); ?>" defer></script>
-<?php if ($zh_is_post): ?>
+<?php if ($zh_load_prism): ?>
 <script src="<?php $zh_options->themeUrl('/assets/vendor/prism/prism-bundle.min.js'); ?>" defer></script>
 <?php endif; ?>
 <?php echo trim((string) $zh_options->customFooter); ?>

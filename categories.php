@@ -11,6 +11,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 ?>
 <main class="zh-main" id="main">
+    <?php if (zh_cache_start('page')): else: ?>
     <header class="zh-page-head">
         <h1 class="zh-page-title"><?php $this->title() ?></h1>
     </header>
@@ -35,5 +36,6 @@ $this->need('header.php');
     <?php if (trim((string) $this->content) !== ''): ?>
     <div class="zh-content zh-page-content"><?php $this->content(); ?></div>
     <?php endif; ?>
+    <?php zh_cache_end(); endif; ?>
 </main>
 <?php $this->need('footer.php'); ?>
