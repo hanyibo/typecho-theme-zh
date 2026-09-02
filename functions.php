@@ -183,6 +183,27 @@ function themeConfig($form)
         _t('超过该时长的缓存自动重建；留空或 0 视为 3600')
     );
     $form->addInput($cacheTtl->addRule('isInteger', _t('缓存有效期必须是非负整数')));
+
+    /* 缓存管理：纯展示行。用 addItem 而非 addInput，不会注册为表单输入项，
+       保存设置时不会被写入主题选项（见 \Widget\Themes\Edit 的 getAllRequest） */
+    $cacheCount = count(glob(ZH_CACHE_DIR . '*.html') ?: array());
+    $cacheClearUrl = \Typecho\Common::url(
+        '?zh_cache_clear=' . zh_cache_clear_token(),
+        (string) \Typecho\Widget::widget('\Widget\Options')->siteUrl
+    );
+
+    $cacheManage = new \Typecho\Widget\Helper\Layout('ul', array('class' => 'typecho-option'));
+    $cacheManageLi = new \Typecho\Widget\Helper\Layout('li');
+    $cacheManageP = new \Typecho\Widget\Helper\Layout('p', array('class' => 'description'));
+    $cacheManageP->html(
+        _t('当前缓存文件 %d 个。', $cacheCount)
+        . '<a href="' . htmlspecialchars($cacheClearUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank">'
+        . _t('清空全部页面缓存') . '</a>'
+        . _t('（需管理员登录，点击后立即生效）')
+    );
+    $cacheManageLi->addItem($cacheManageP);
+    $cacheManage->addItem($cacheManageLi);
+    $form->addItem($cacheManage);
 }
 
 /* ===================== 文章编辑页自定义字段 ===================== */
@@ -221,6 +242,9 @@ function themeFields($layout)
 
 function themeInit($archive)
 {
+    // 外观设置页「清空页面缓存」链接的接收端（见 zh_cache_maybe_clear）
+    zh_cache_maybe_clear();
+
     // 正文统一处理：图片懒加载、外链新窗口打开
     if ($archive->is('single')) {
         $archive->content = zh_filter_content($archive->content);
@@ -592,6 +616,9 @@ function zh_cache_start($scope, $widget = null)
     if (is_file($path) && (time() - (int) filemtime($path)) <= zh_cache_ttl()) {
         $content = file_get_contents($path);
         if ($content !== false) {
+            /* 命中标记（调试用）：实时渲染时无此注释；不需要时删除下一行即可 */
+            echo '<!-- ZH-CACHE HIT ' . $scope . ' @ ' . gmdate('Y-m-d H:i:s', (int) filemtime($path))
+                . ' UTC (TTL ' . zh_cache_ttl() . 's) -->' . "\n";
             echo $content;
             return true;
         }
@@ -690,4 +717,54 @@ function zh_cache_clear()
         }
     }
     return $count;
+}
+
+/** 清空缓存链接的令牌：由站点密钥派生，无法伪造（防 CSRF） */
+function zh_cache_clear_token()
+{
+    $secret = (string) \Typecho\Widget::widget('\Widget\Options')->secret;
+    return md5('ZH-theme-cache-clear|' . $secret);
+}
+
+/**
+ * 清空缓存入口：外观设置页「清空全部页面缓存」链接指向
+ * https://站点/?zh_cache_clear=<token>，themeInit() 每次请求都会调用本函数。
+ * 令牌 + 管理员身份双重校验，不符则按普通请求照常渲染，无任何副作用。
+ *
+ * 已知限制：站点把自定义 PHP 文件设为首页（frontPage 为 file:）时，
+ * 首页请求不经过 themeInit()，该配置下链接无效。
+ */
+function zh_cache_maybe_clear()
+{
+    if (!isset($_GET['zh_cache_clear']) || ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+        return;
+    }
+
+    $given = (string) $_GET['zh_cache_clear'];
+    if ($given === '' || !hash_equals(zh_cache_clear_token(), $given)) {
+        return;
+    }
+
+    try {
+        $user = \Widget\User::alloc();
+    } catch (\Throwable $e) {
+        return;
+    }
+    if (!$user->pass('administrator', true)) {
+        return;
+    }
+
+    $count = zh_cache_clear();
+    $options = \Typecho\Widget::widget('\Widget\Options');
+    $homeUrl = (string) $options->siteUrl;
+    $adminUrl = \Typecho\Common::url('options-theme.php', (string) $options->adminUrl);
+
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
+        . '<title>' . _t('页面缓存已清空') . '</title></head><body>'
+        . '<p>' . _t('已清空 %d 个页面缓存文件。', (int) $count) . '</p>'
+        . '<p><a href="' . htmlspecialchars($homeUrl, ENT_QUOTES, 'UTF-8') . '">' . _t('返回首页') . '</a>'
+        . ' · <a href="' . htmlspecialchars($adminUrl, ENT_QUOTES, 'UTF-8') . '">' . _t('返回外观设置') . '</a></p>'
+        . '</body></html>';
+    exit;
 }
