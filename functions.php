@@ -698,6 +698,10 @@ function zh_cache_gc()
     }
     $expire = time() - zh_cache_ttl();
     foreach (glob(ZH_CACHE_DIR . '*.html') ?: array() as $file) {
+        /* index.html 是防目录列表的兜底文件，只允许 zh_cache_end 重建，不参与过期清理 */
+        if (basename($file) === 'index.html') {
+            continue;
+        }
         if (is_file($file) && (int) filemtime($file) < $expire) {
             @unlink($file);
         }
@@ -712,6 +716,10 @@ function zh_cache_clear()
     }
     $count = 0;
     foreach (glob(ZH_CACHE_DIR . '*.html') ?: array() as $file) {
+        /* 防直访的空 index.html 与 .htaccess 一样属于保护文件，保留 */
+        if (basename($file) === 'index.html') {
+            continue;
+        }
         if (@unlink($file)) {
             $count++;
         }
