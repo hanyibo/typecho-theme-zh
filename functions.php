@@ -186,7 +186,8 @@ function themeConfig($form)
 
     /* 缓存管理：纯展示行。用 addItem 而非 addInput，不会注册为表单输入项，
        保存设置时不会被写入主题选项（见 \Widget\Themes\Edit 的 getAllRequest） */
-    $cacheCount = count(glob(ZH_CACHE_DIR . '*.html') ?: array());
+    $cacheCount = count(glob(ZH_CACHE_DIR . '*.html') ?: array())
+        - (is_file(ZH_CACHE_DIR . 'index.html') ? 1 : 0);
     $cacheClearUrl = \Typecho\Common::url(
         '?zh_cache_clear=' . zh_cache_clear_token(),
         (string) \Typecho\Widget::widget('\Widget\Options')->siteUrl
@@ -307,8 +308,9 @@ function zh_link_tag($matches)
  * 取文章缩略图地址（不输出）
  * 优先级：自定义字段 thumb > 正文第一张图 > 附件图片 > 默认缩略图
  */
-function zh_thumb_src($widget)
+function zh_thumb_src($widget, &$fallback = null)
 {
+    $fallback = false;
     $fields = $widget->fields;
     $custom = ($fields && isset($fields->thumb)) ? trim((string) $fields->thumb) : '';
     if ($custom !== '') {
@@ -319,12 +321,18 @@ function zh_thumb_src($widget)
     }
 
     if (preg_match('/<img\b[^>]*src\s*=\s*("|\')([^"\']+)\1[^>]*>/i', (string) $widget->content, $m)) {
-        return trim($m[2]);
+        $src = zh_safe_url(html_entity_decode($m[2], ENT_QUOTES, 'UTF-8'));
+        if ($src !== '#') {
+            return $src;
+        }
     }
 
     $attachment = $widget->attachments(1)->attachment;
     if ($attachment && $attachment->isImage) {
-        return $attachment->url;
+        $src = zh_safe_url($attachment->url);
+        if ($src !== '#') {
+            return $src;
+        }
     }
 
     $options = \Typecho\Widget::widget('\Widget\Options');
@@ -332,19 +340,22 @@ function zh_thumb_src($widget)
     if ($default !== '') {
         $default = zh_safe_url($default);
         if ($default !== '#') {
+            $fallback = true;
             return $default;
         }
     }
 
+    $fallback = true;
     return $options->themeUrl . '/assets/img/default-thumb.svg';
 }
 
 /** 输出缩略图 <img> */
 function zh_thumb($widget, $class = 'zh-thumb')
 {
-    $src = zh_thumb_src($widget);
+    $fallback = false;
+    $src = zh_thumb_src($widget, $fallback);
     $alt = htmlspecialchars((string) $widget->title, ENT_QUOTES, 'UTF-8');
-    echo '<img class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '" src="'
+    echo '<img class="' . htmlspecialchars($class . ($fallback ? ' zh-thumb-fallback' : ''), ENT_QUOTES, 'UTF-8') . '" src="'
         . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . $alt
         . '" loading="lazy" decoding="async" />';
 }
@@ -434,23 +445,28 @@ function zh_nav_active($link)
 /** 输出 JSON-LD 结构化数据（转义 </script> 防注入） */
 function zh_json_ld($data)
 {
-    echo str_replace('</', '<\\/', (string) json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    echo str_replace('</', '<\\/', (string) json_encode($data,
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE));
 }
 
 /**
- * 校正不可信来源的链接地址：仅放行 http(s) 与相对地址，
- * 其余协议（javascript: / vbscript: / data: 等）一律替换为 #。
- * 先剔除浏览器解析 URL 时会忽略的控制字符，防止 "jav\tascript:" 之类绕过。
+ * 校正不可信来源的链接地址：仅放行有效的 http(s) 与相对地址。
+ * 控制字符和反斜线会被浏览器特殊解析，直接拒绝，避免协议绕过。
  */
 function zh_safe_url($url)
 {
-    $url = trim(str_replace(array("\r", "\n", "\t", "\0", "\x0B"), '', (string) $url));
-    if ($url === '') {
+    $url = trim((string) $url);
+    if ($url === '' || preg_match('/[\x00-\x1F\x7F\\\\]/', $url)) {
         return '#';
     }
-    if (preg_match('/^([a-zA-Z][a-zA-Z0-9+.\-]*):/s', $url, $m)
-        && strtolower($m[1]) !== 'http' && strtolower($m[1]) !== 'https') {
-        return '#';
+    if (preg_match('/^[a-zA-Z][a-zA-Z0-9+.\-]*:/', $url)) {
+        $parts = parse_url($url);
+        return is_array($parts) && !empty($parts['host'])
+            && in_array(strtolower((string) $parts['scheme']), array('http', 'https'), true) ? $url : '#';
+    }
+    if (strpos($url, '//') === 0) {
+        $parts = parse_url('https:' . $url);
+        return is_array($parts) && !empty($parts['host']) ? $url : '#';
     }
     return $url;
 }
@@ -536,8 +552,9 @@ function zh_cache_ttl()
  * 内容指纹：把影响页面输出的全站性数据压缩成一个短哈希。
  * modified 用 SUM 而非 MAX：编辑任意一篇（不限最新修改的）文章/页面
  * 都会改变总和，指纹随即失效。
- * 评论增删改审核会改变 commentsNum 之和（Typecho 会同步
- * contents.commentsNum）；分类、标签、菜单、主题设置变化会改变 option 值。
+ * 评论数按文章 cid 加权，避免评论在文章间转移但总数不变时误命中。
+ * 分类/标签读取实际字段，覆盖重命名、描述及排序的原地修改。
+ * 密码保护状态单独参与指纹，防止同一秒加密文章时列表命中旧缓存。
  */
 function zh_cache_fingerprint()
 {
@@ -552,12 +569,18 @@ function zh_cache_fingerprint()
         ->from('table.contents')
         ->where('type = ? AND status = ?', 'post', 'publish'));
 
-    $comments = $db->fetchRow($db->select(array('SUM(commentsNum)' => 'cmt'))
+    $comments = $db->fetchRow($db->select(array('SUM(commentsNum)' => 'cmt',
+        'SUM(cid * commentsNum)' => 'weighted'))
         ->from('table.contents')
         ->where('type = ?', 'post'));
 
-    $metas = $db->fetchRow($db->select(array('COUNT(mid)' => 'cnt', 'MAX(mid)' => 'maxid'))
-        ->from('table.metas'));
+    $protected = $db->fetchAll($db->select('cid', 'password')
+        ->from('table.contents')
+        ->where('type = ? AND status = ? AND password IS NOT NULL AND password <> ?', 'post', 'publish', '')
+        ->order('cid'));
+
+    $metas = $db->fetchAll($db->select('mid', 'type', 'name', 'slug', 'description', 'parent', 'order', 'count')
+        ->from('table.metas')->order('mid'));
 
     // 独立页面（关于页、自定义模板页等）的修改时间
     $pages = $db->fetchRow($db->select(array('SUM(modified)' => 'mtime'))
@@ -568,8 +591,9 @@ function zh_cache_fingerprint()
 
     $raw = implode('|', array(
         'posts=' . ($posts ? (int) $posts['cnt'] . ':' . (int) $posts['mtime'] : '0:0'),
-        'comments=' . ($comments ? (int) $comments['cmt'] : 0),
-        'metas=' . ($metas ? (int) $metas['cnt'] . ':' . (int) $metas['maxid'] : '0:0'),
+        'protected=' . md5(json_encode($protected, JSON_INVALID_UTF8_SUBSTITUTE)),
+        'comments=' . ($comments ? (string) $comments['cmt'] . ':' . (string) $comments['weighted'] : '0:0'),
+        'metas=' . md5(json_encode($metas, JSON_INVALID_UTF8_SUBSTITUTE)),
         'pages=' . ($pages ? (int) $pages['mtime'] : 0),
         'theme=' . md5(json_encode(array(
             $options->cacheTtl,
@@ -673,15 +697,24 @@ function zh_cache_end()
         @file_put_contents($dir . 'index.html', '');
     }
 
+    if (!is_dir($dir)) {
+        return;
+    }
     $tmp = tempnam($dir, 'w');
     if ($tmp !== false) {
-        file_put_contents($tmp, $content);
+        if (file_put_contents($tmp, $content) !== strlen($content)) {
+            @unlink($tmp);
+            return;
+        }
         $dest = zh_cache_path($scope);
-        // Windows 上 rename() 不能覆盖已存在文件，先删旧缓存
+        // Windows 上 rename() 不能覆盖已存在文件；短暂缺失只会触发实时渲染。
         if (is_file($dest)) {
             @unlink($dest);
         }
-        @rename($tmp, $dest); // 原子替换，避免并发写坏文件
+        if (!@rename($tmp, $dest)) {
+            @unlink($tmp);
+            return;
+        }
 
         /* 低频 GC：清理超过 TTL 的陈旧缓存，防止搜索页等不可枚举 URL 无限累积 */
         if (mt_rand(1, 100) === 1) {

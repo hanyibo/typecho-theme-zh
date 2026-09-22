@@ -12,7 +12,7 @@ $this->archiveTitle(array(
 ), '', '');
 $zh_arch_name = trim(ob_get_clean());
 ?>
-<main class="zh-main" id="main">
+<main class="zh-main zh-main-list" id="main">
     <?php if (zh_cache_start('archive')): else: ?>
     <header class="zh-page-head">
         <h1 class="zh-page-title"><?php echo $zh_arch_name !== '' ? htmlspecialchars($zh_arch_name, ENT_QUOTES, 'UTF-8') : '归档'; ?></h1>

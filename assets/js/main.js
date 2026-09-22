@@ -195,7 +195,12 @@
         btn.textContent = '复制';
         btn.setAttribute('aria-label', '复制代码');
         btn.addEventListener('click', function () {
-            copyText(pre.innerText, function (ok) {
+            var source = pre.cloneNode(true);
+            var copiedButton = source.querySelector('.zh-copy-btn');
+            if (copiedButton) {
+                copiedButton.parentNode.removeChild(copiedButton);
+            }
+            copyText(source.textContent, function (ok) {
                 btn.textContent = ok ? '已复制' : '复制失败';
                 btn.classList.toggle('zh-copied', ok);
                 setTimeout(function () {

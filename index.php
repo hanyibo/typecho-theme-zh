@@ -1,4 +1,5 @@
 <?php
+if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
  * ZH · 简约单栏主题
  *
@@ -10,10 +11,9 @@
  * @version 1.0.0
  * @link https://www.hanyibo.com
  */
-if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 ?>
-<main class="zh-main" id="main">
+<main class="zh-main zh-main-list" id="main">
     <?php if (zh_cache_start('index')): else: ?>
     <?php if ($this->have()): ?>
     <div class="zh-post-list">

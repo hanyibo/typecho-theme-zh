@@ -1,4 +1,5 @@
 <?php
+if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 /**
  * 归档
  *
@@ -7,7 +8,6 @@
  *
  * @package custom
  */
-if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $this->need('header.php');
 
 if (!zh_cache_start('page', $this)):
