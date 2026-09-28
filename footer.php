@@ -33,7 +33,7 @@ $zh_footer_text = trim((string) $zh_options->footerText);
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
 
-<script src="<?php $zh_options->themeUrl('/assets/js/main.js'); ?>" defer></script>
+<script src="<?php $zh_options->themeUrl('/assets/js/main.js?v=' . (int) filemtime(__DIR__ . '/assets/js/main.js')); ?>" defer></script>
 <?php echo trim((string) $zh_options->customFooter); ?>
 <?php $this->footer(); ?>
 </body>

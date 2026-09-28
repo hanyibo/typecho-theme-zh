@@ -5,41 +5,51 @@
 
 /* ---------- 设计变量 ---------- */
 :root {
-    --zh-bg: #f5f7fb;
+    --zh-bg: #f7f8fa;
     --zh-surface: #ffffff;
-    --zh-text: #1f2328;
-    --zh-text-2: #626d7e;
-    --zh-border: #e2e8f0;
-    --zh-accent: #355fc8;
+    --zh-text: #1f2937;
+    --zh-text-2: #586779;
+    --zh-border: #dfe5ec;
+    --zh-accent: #2563eb;
     --zh-accent-weak: #edf3ff;
-    --zh-header-bg: rgba(245, 247, 251, .88);
-    --zh-thumb-bg: #edf3fb;
-    --zh-thumb-border: rgba(65, 87, 121, .14);
-    --zh-code-inline-bg: #eef0f4;
-    --zh-code-bg: #272822;
-    --zh-code-fg: #f8f8f2;
-    --zh-shadow-sm: 0 2px 8px rgba(28, 45, 74, .035);
-    --zh-shadow-lg: 0 16px 36px -18px rgba(28, 45, 74, .22);
-    --zh-radius: 16px;
+    --zh-on-accent: #ffffff;
+    --zh-header-bg: rgba(247, 248, 250, .96);
+    --zh-thumb-bg: #e8edf4;
+    --zh-thumb-border: rgba(62, 85, 117, .18);
+    --zh-code-inline-bg: #edf1f6;
+    --zh-code-bg: #111827;
+    --zh-code-fg: #e2e8f0;
+    --zh-code-bar: #1b2434;
+    --zh-code-border: #334155;
+    --zh-code-muted: #a7b5c9;
+    --zh-code-keyword: #93c5fd;
+    --zh-code-string: #a7e0bd;
+    --zh-code-function: #f6d596;
+    --zh-code-number: #d6b5fa;
+    --zh-shadow-sm: 0 2px 8px rgba(25, 45, 75, .025);
+    --zh-shadow-lg: 0 8px 24px rgba(25, 45, 75, .07);
+    --zh-radius: 8px;
+    --zh-font-title: var(--zh-font);
     --zh-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
         "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
     color-scheme: light;
 }
 
 [data-theme="dark"] {
-    --zh-bg: #0e141d;
-    --zh-surface: #18212d;
-    --zh-text: #e8ebf0;
-    --zh-text-2: #a3afbd;
-    --zh-border: #2a3646;
-    --zh-accent: #91acff;
-    --zh-accent-weak: #23324a;
-    --zh-header-bg: rgba(14, 20, 29, .88);
-    --zh-thumb-bg: #202d3e;
-    --zh-thumb-border: rgba(212, 226, 249, .12);
-    --zh-code-inline-bg: #232933;
-    --zh-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
-    --zh-shadow-lg: 0 14px 28px -14px rgba(0, 0, 0, .6);
+    --zh-bg: #0f141c;
+    --zh-surface: #171f2c;
+    --zh-text: #e5ebf3;
+    --zh-text-2: #9baac0;
+    --zh-border: #2b3749;
+    --zh-accent: #8ab4ff;
+    --zh-accent-weak: #1b2d47;
+    --zh-on-accent: #0f141c;
+    --zh-header-bg: rgba(15, 20, 28, .96);
+    --zh-thumb-bg: #202c3d;
+    --zh-thumb-border: rgba(229, 235, 243, .16);
+    --zh-code-inline-bg: #202b3b;
+    --zh-shadow-sm: 0 2px 8px rgba(0, 0, 0, .08);
+    --zh-shadow-lg: 0 8px 24px rgba(0, 0, 0, .2);
     color-scheme: dark;
 }
 
@@ -91,7 +101,7 @@ button {
 
 ::selection {
     background: var(--zh-accent);
-    color: #fff;
+    color: var(--zh-on-accent);
 }
 
 :focus-visible {
@@ -107,7 +117,7 @@ button {
     z-index: 300;
     padding: .5em 1em;
     background: var(--zh-accent);
-    color: #fff;
+    color: var(--zh-on-accent);
     border-radius: 8px;
 }
 
@@ -124,14 +134,15 @@ button {
 
 .zh-main {
     width: 100%;
-    max-width: 760px;
+    max-width: 740px;
     margin: 0 auto;
-    padding: 2.5rem 1.25rem 3.5rem;
+    padding: 3.5rem 1.25rem 4.5rem;
+    min-width: 0;
     flex: 1;
 }
 
 .zh-main-list {
-    max-width: 860px;
+    max-width: 820px;
 }
 
 /* ---------- 顶部导航 ---------- */
@@ -140,8 +151,8 @@ button {
     top: 0;
     z-index: 100;
     background: var(--zh-header-bg);
-    -webkit-backdrop-filter: saturate(1.5) blur(14px);
-    backdrop-filter: saturate(1.5) blur(14px);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--zh-border);
     transition: box-shadow .25s ease;
 }
@@ -151,7 +162,7 @@ button {
 }
 
 .zh-header-inner {
-    max-width: 860px;
+    max-width: 820px;
     margin: 0 auto;
     padding: 0 1.25rem;
     height: 64px;
@@ -161,10 +172,14 @@ button {
 }
 
 .zh-brand {
+    font-family: var(--zh-font-title);
     font-size: 1.125rem;
     font-weight: 700;
-    letter-spacing: .02em;
+    letter-spacing: .015em;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 12em;
 }
 
 .zh-brand:hover {
@@ -215,6 +230,9 @@ h1.zh-brand a:hover {
 .zh-item.active > a {
     color: var(--zh-accent);
     font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 7px;
 }
 
 .zh-caret {
@@ -240,8 +258,7 @@ h1.zh-brand a:hover {
     padding: .4rem;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(6px);
-    transition: opacity .18s ease, transform .18s ease, visibility .18s;
+    transition: opacity .18s ease, visibility .18s;
 }
 
 .zh-has-sub:hover .zh-caret,
@@ -292,10 +309,10 @@ h1.zh-brand a:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 6px;
     background: transparent;
     color: var(--zh-text-2);
     transition: background-color .18s ease, color .18s ease;
@@ -326,10 +343,18 @@ h1.zh-brand a:hover {
 }
 
 .zh-search form {
-    width: 0;
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: min(280px, 82vw);
+    padding: 6px;
+    border: 1px solid var(--zh-border);
+    border-radius: var(--zh-radius);
+    background: var(--zh-surface);
+    box-shadow: var(--zh-shadow-lg);
+    visibility: hidden;
     opacity: 0;
-    overflow: hidden;
-    transition: width .25s ease, opacity .2s ease;
+    transition: opacity .18s ease, visibility .18s ease;
 }
 
 .zh-search input {
@@ -341,7 +366,7 @@ h1.zh-brand a:hover {
     background: var(--zh-surface);
     color: var(--zh-text);
     font-size: .9rem;
-    outline: none;
+    outline-offset: 3px;
 }
 
 .zh-search input:focus {
@@ -349,9 +374,8 @@ h1.zh-brand a:hover {
 }
 
 .zh-search.zh-search-open form {
-    width: 200px;
+    visibility: visible;
     opacity: 1;
-    margin-right: .4rem;
 }
 
 .zh-burger {
@@ -366,28 +390,26 @@ h1.zh-brand a:hover {
     display: block;
 }
 
-/* ---------- 文章卡片列表 ---------- */
+/* ---------- 技术文章列表 ---------- */
 .zh-post-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
 }
 
 .zh-card {
     display: flex;
+    align-items: flex-start;
     gap: 1.5rem;
-    background: var(--zh-surface);
-    border: 1px solid var(--zh-border);
-    border-radius: var(--zh-radius);
-    padding: 1.2rem;
-    box-shadow: var(--zh-shadow-sm);
-    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--zh-border);
 }
 
-.zh-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--zh-shadow-lg);
-    border-color: var(--zh-thumb-border);
+.zh-card:first-child {
+    padding-top: 0;
+}
+
+.zh-card-text-only {
+    display: block;
 }
 
 .zh-card:focus-within {
@@ -396,10 +418,10 @@ h1.zh-brand a:hover {
 
 .zh-card-thumb {
     position: relative;
-    flex: 0 0 240px;
-    align-self: flex-start;
+    flex: 0 0 160px;
+    width: 160px;
     display: block;
-    border-radius: 12px;
+    border-radius: 6px;
     overflow: hidden;
     aspect-ratio: 16 / 10;
     background: var(--zh-thumb-bg);
@@ -419,20 +441,6 @@ h1.zh-brand a:hover {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform .35s ease;
-}
-
-.zh-card-thumb .zh-thumb-fallback {
-    mix-blend-mode: multiply;
-}
-
-[data-theme="dark"] .zh-card-thumb .zh-thumb-fallback {
-    mix-blend-mode: normal;
-    filter: brightness(.82);
-}
-
-.zh-card:hover .zh-card-thumb .zh-thumb {
-    transform: scale(1.045);
 }
 
 .zh-card-body {
@@ -440,16 +448,15 @@ h1.zh-brand a:hover {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: .55rem;
+    gap: .6rem;
 }
 
 .zh-card-title {
     margin: 0;
-    font-size: 1.16rem;
+    font-family: var(--zh-font-title);
+    font-size: 1.25rem;
     font-weight: 650;
-    line-height: 1.48;
-    letter-spacing: -.01em;
+    line-height: 1.5;
     overflow-wrap: anywhere;
 }
 
@@ -468,8 +475,8 @@ h1.zh-brand a:hover {
 .zh-card-excerpt {
     margin: 0;
     color: var(--zh-text-2);
-    font-size: .94rem;
-    line-height: 1.65;
+    font-size: .9375rem;
+    line-height: 1.8;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -492,11 +499,14 @@ h1.zh-brand a:hover {
 }
 
 .zh-card-cat {
-    padding: .1em .55em;
-    border-radius: 999px;
-    background: var(--zh-accent-weak);
     color: var(--zh-accent);
-    line-height: 1.55;
+}
+
+.zh-card-meta time,
+.zh-post-meta time,
+.zh-tl-date {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: .95em;
 }
 
 .zh-dot {
@@ -523,8 +533,10 @@ h1.zh-brand a:hover {
     display: inline-block;
     padding: .45em .95em;
     border: 1px solid var(--zh-border);
-    border-radius: 9px;
-    background: var(--zh-surface);
+    border-radius: 4px;
+    background: transparent;
+    min-width: 40px;
+    text-align: center;
     font-size: .9rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -535,20 +547,26 @@ h1.zh-brand a:hover {
     border-color: var(--zh-accent);
 }
 
+.page-navigator li.current a,
 .page-navigator li.current strong {
     background: var(--zh-accent);
     border-color: var(--zh-accent);
-    color: #fff;
+    color: var(--zh-on-accent);
 }
 
 /* ---------- 页面/归档标题 ---------- */
 .zh-page-head {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--zh-border);
 }
 
 .zh-page-title {
-    margin: 0 0 .35rem;
-    font-size: 1.5rem;
+    margin: 0 0 .6rem;
+    font-family: var(--zh-font-title);
+    font-size: 2rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .zh-page-sub {
@@ -559,13 +577,17 @@ h1.zh-brand a:hover {
 
 /* ---------- 文章页 ---------- */
 .zh-post-head {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--zh-border);
 }
 
 .zh-post-title {
-    margin: 0 0 .75rem;
-    font-size: 1.75rem;
-    line-height: 1.4;
+    margin: 0 0 1rem;
+    font-family: var(--zh-font-title);
+    font-size: 2rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .zh-post-meta {
@@ -594,7 +616,7 @@ h1.zh-brand a:hover {
 
 .zh-post-tags a {
     padding: .28em .85em;
-    border-radius: 999px;
+    border-radius: 4px;
     background: var(--zh-accent-weak);
     color: var(--zh-accent);
     font-size: .82rem;
@@ -627,8 +649,9 @@ h1.zh-brand a:hover {
     color: var(--zh-text-2);
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    overflow-wrap: anywhere;
 }
 
 .zh-post-nav-item a:hover {
@@ -637,10 +660,9 @@ h1.zh-brand a:hover {
 
 /* ---------- 正文排版 ---------- */
 .zh-content {
-    font-size: 1rem;
+    font-size: 1.0625rem;
     line-height: 1.85;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .zh-content > *:first-child {
@@ -653,14 +675,16 @@ h1.zh-brand a:hover {
 .zh-content h4,
 .zh-content h5,
 .zh-content h6 {
-    margin: 2em 0 .8em;
-    line-height: 1.45;
+    margin: 2.2em 0 .85em;
+    scroll-margin-top: 6rem;
+    font-family: var(--zh-font-title);
+    line-height: 1.5;
     font-weight: 700;
 }
 
 .zh-content h2 {
-    font-size: 1.35em;
-    padding-bottom: .35em;
+    font-size: 1.4em;
+    padding-bottom: .55em;
     border-bottom: 1px solid var(--zh-border);
 }
 
@@ -675,24 +699,26 @@ h1.zh-brand a:hover {
 }
 
 .zh-content p {
-    margin: 1.1em 0;
+    margin: 1.2em 0;
 }
 
 .zh-content a {
     color: var(--zh-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
 }
 
 .zh-content a:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    color: var(--zh-text);
 }
 
 .zh-content blockquote {
-    margin: 1.4em 0;
-    padding: .2em 1.2em;
-    border-left: 3px solid var(--zh-accent);
+    margin: 1.6em 0;
+    padding: .3em 1.2em;
     background: var(--zh-accent-weak);
-    border-radius: 0 10px 10px 0;
+    border-radius: 0 6px 6px 0;
+    border-left: 3px solid var(--zh-accent);
     color: var(--zh-text-2);
 }
 
@@ -703,7 +729,7 @@ h1.zh-brand a:hover {
 .zh-content ul,
 .zh-content ol {
     padding-left: 1.6em;
-    margin: 1.1em 0;
+    margin: 1.2em 0;
 }
 
 .zh-content li {
@@ -711,39 +737,48 @@ h1.zh-brand a:hover {
 }
 
 .zh-content img {
-    border-radius: 10px;
+    border-radius: 6px;
     display: block;
-    margin: 1.4em auto;
+    margin: 1.6em auto;
     cursor: zoom-in;
 }
 
 .zh-content code {
-    padding: .18em .45em;
-    border-radius: 6px;
+    padding: .15em .4em;
+    border: 1px solid var(--zh-border);
+    border-radius: 4px;
+    color: var(--zh-accent);
     background: var(--zh-code-inline-bg);
     font-size: .88em;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
-.zh-content pre {
+.zh-content pre,
+.zh-content pre[class*="language-"] {
     margin: 1.5em 0;
-    padding: 1.1em 1.2em;
-    border-radius: 12px;
+    padding: 1.25rem;
+    border-radius: 6px;
     background: var(--zh-code-bg);
     color: var(--zh-code-fg);
     overflow: auto;
     font-size: .875rem;
     line-height: 1.7;
     position: relative;
+    text-shadow: none;
+    tab-size: 4;
 }
 
-.zh-content pre code {
+.zh-content pre code,
+.zh-content pre code[class*="language-"] {
     display: block;
     padding: 0;
+    border: 0;
     background: transparent;
     color: inherit;
     font-size: inherit;
     white-space: pre;
+    line-height: inherit;
+    text-shadow: none;
 }
 
 .zh-content table {
@@ -764,6 +799,38 @@ h1.zh-brand a:hover {
 
 .zh-content th {
     background: var(--zh-code-inline-bg);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.zh-content tbody tr:nth-child(even) {
+    background: var(--zh-surface);
+}
+
+.zh-table-wrap {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    border: 1px solid var(--zh-border);
+    border-radius: 6px;
+}
+
+.zh-content .zh-table-wrap table {
+    display: table;
+    margin: 0;
+    min-width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+
+.zh-content .zh-table-wrap th,
+.zh-content .zh-table-wrap td {
+    min-width: 7em;
+    border-width: 0 0 1px;
+    padding: .75em 1em;
+    overflow-wrap: normal;
+}
+
+.zh-content .zh-table-wrap tr:last-child td {
+    border-bottom: 0;
 }
 
 .zh-content hr {
@@ -783,32 +850,106 @@ h1.zh-brand a:hover {
     font-size: .85rem;
 }
 
-/* 代码复制按钮 */
-.zh-copy-btn {
-    position: absolute;
-    top: .6rem;
-    right: .6rem;
-    padding: .25em .7em;
-    border: 0;
-    border-radius: 7px;
-    background: rgba(255, 255, 255, .12);
-    color: #c8cdd6;
+.zh-page-content {
+    margin-top: 2.5rem;
+}
+
+/* 代码工具栏与本地 Prism 配色 */
+.zh-code-block {
+    margin: 1.75rem 0;
+    overflow: hidden;
+    border: 1px solid var(--zh-code-border);
+    border-radius: 8px;
+    background: var(--zh-code-bg);
+}
+
+.zh-code-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .35rem .75rem .35rem 1.1rem;
+    background: var(--zh-code-bar);
+    border-bottom: 1px solid var(--zh-code-border);
+    font-family: var(--zh-font);
+    line-height: 1.5;
+}
+
+.zh-code-language {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--zh-code-muted);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
     font-size: .75rem;
-    opacity: 0;
-    transition: opacity .18s ease, background-color .18s ease;
+    font-weight: 600;
+    letter-spacing: .05em;
 }
 
-.zh-content pre:hover .zh-copy-btn,
+.zh-content .zh-code-block pre {
+    margin: 0;
+    border-radius: 0;
+}
+
+.zh-copy-btn {
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: .35em .8em;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--zh-code-fg);
+    font-size: .75rem;
+    transition: background-color .18s ease, border-color .18s ease;
+}
+
+.zh-copy-btn:hover,
 .zh-copy-btn:focus-visible {
-    opacity: 1;
-}
-
-.zh-copy-btn:hover {
-    background: rgba(255, 255, 255, .22);
+    background: var(--zh-code-border);
+    border-color: var(--zh-code-muted);
 }
 
 .zh-copy-btn.zh-copied {
-    color: #7ee2a8;
+    color: var(--zh-code-string);
+}
+
+.zh-content .token.comment,
+.zh-content .token.prolog,
+.zh-content .token.doctype,
+.zh-content .token.cdata {
+    color: var(--zh-code-muted);
+}
+
+.zh-content .token.keyword,
+.zh-content .token.tag,
+.zh-content .token.atrule {
+    color: var(--zh-code-keyword);
+}
+
+.zh-content .token.string,
+.zh-content .token.attr-value,
+.zh-content .token.char,
+.zh-content .token.inserted {
+    color: var(--zh-code-string);
+}
+
+.zh-content .token.function,
+.zh-content .token.class-name,
+.zh-content .token.attr-name {
+    color: var(--zh-code-function);
+}
+
+.zh-content .token.number,
+.zh-content .token.boolean,
+.zh-content .token.constant,
+.zh-content .token.property,
+.zh-content .token.symbol {
+    color: var(--zh-code-number);
+}
+
+.zh-content .token.operator,
+.zh-content .token.punctuation,
+.zh-content .token.variable {
+    color: var(--zh-code-fg);
 }
 
 /* ---------- 评论 ---------- */
@@ -819,8 +960,9 @@ h1.zh-brand a:hover {
 }
 
 .zh-comments-title {
-    margin: 0 0 1rem;
-    font-size: 1.15rem;
+    margin: 0 0 1.5rem;
+    font-family: var(--zh-font-title);
+    font-size: 1.35rem;
 }
 
 .zh-comment-list {
@@ -844,15 +986,19 @@ h1.zh-brand a:hover {
 }
 
 .zh-comment-children .zh-comment:first-child {
-    border-top: 1px dashed var(--zh-border);
+    border-top: 1px solid var(--zh-border);
 }
 
 .zh-comment-avatar img {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--zh-accent-weak);
     display: block;
+}
+
+.zh-comment-avatar {
+    flex: 0 0 auto;
 }
 
 .zh-comment-main {
@@ -879,7 +1025,7 @@ h1.zh-brand a:hover {
     content: "作者";
     margin-left: .5em;
     padding: .1em .5em;
-    border-radius: 999px;
+    border-radius: 4px;
     background: var(--zh-accent-weak);
     color: var(--zh-accent);
     font-size: .72rem;
@@ -890,7 +1036,7 @@ h1.zh-brand a:hover {
 .zh-comment-content {
     margin-top: .4em;
     font-size: .95rem;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .zh-comment-content p {
@@ -926,11 +1072,9 @@ h1.zh-brand a:hover {
 }
 
 .zh-respond {
-    margin-top: 1.5rem;
-    padding: 1.25rem;
-    background: var(--zh-surface);
-    border: 1px solid var(--zh-border);
-    border-radius: var(--zh-radius);
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--zh-border);
 }
 
 .zh-respond-title {
@@ -940,7 +1084,7 @@ h1.zh-brand a:hover {
 
 .zh-form-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: .6rem;
     margin-bottom: .6rem;
 }
@@ -950,12 +1094,13 @@ h1.zh-brand a:hover {
     width: 100%;
     padding: .65em .9em;
     border: 1px solid var(--zh-border);
-    border-radius: 10px;
-    background: var(--zh-bg);
+    border-radius: 6px;
+    background: var(--zh-surface);
+    min-width: 0;
     color: var(--zh-text);
     font-family: inherit;
-    font-size: .92rem;
-    outline: none;
+    font-size: 1rem;
+    outline-offset: 3px;
     transition: border-color .18s ease;
 }
 
@@ -983,6 +1128,7 @@ h1.zh-brand a:hover {
 
 .zh-form-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: .9rem;
 }
@@ -990,12 +1136,12 @@ h1.zh-brand a:hover {
 .zh-btn-submit {
     padding: .55em 1.5em;
     border: 0;
-    border-radius: 10px;
+    border-radius: 6px;
     background: var(--zh-accent);
-    color: #fff;
+    color: var(--zh-on-accent);
     font-size: .92rem;
     font-weight: 600;
-    transition: opacity .18s ease, transform .18s ease;
+    transition: background-color .18s ease, color .18s ease;
 }
 
 .zh-btn-submit:hover {
@@ -1003,7 +1149,7 @@ h1.zh-brand a:hover {
 }
 
 .zh-btn-submit:active {
-    transform: scale(.97);
+    opacity: .9;
 }
 
 .zh-form-hint {
@@ -1019,7 +1165,7 @@ h1.zh-brand a:hover {
 /* ---------- 分类索引页 ---------- */
 .zh-cat-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
     gap: 1rem;
 }
 
@@ -1028,21 +1174,22 @@ h1.zh-brand a:hover {
     flex-direction: column;
     gap: .3rem;
     padding: 1.1rem 1.2rem;
-    background: var(--zh-surface);
+    background: transparent;
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
-    box-shadow: var(--zh-shadow-sm);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    transition: background-color .18s ease, border-color .18s ease;
 }
 
 .zh-cat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--zh-shadow-lg);
-    border-color: transparent;
+    background: var(--zh-surface);
+    border-color: var(--zh-thumb-border);
 }
 
 .zh-cat-name {
+    font-family: var(--zh-font-title);
+    font-size: 1.2rem;
     font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .zh-cat-card:hover .zh-cat-name {
@@ -1066,7 +1213,7 @@ h1.zh-brand a:hover {
 /* ---------- 友情链接 ---------- */
 .zh-links-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
     gap: 1rem;
 }
 
@@ -1075,17 +1222,15 @@ h1.zh-brand a:hover {
     align-items: center;
     gap: .85rem;
     padding: 1rem 1.1rem;
-    background: var(--zh-surface);
+    background: transparent;
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
-    box-shadow: var(--zh-shadow-sm);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    transition: background-color .18s ease, border-color .18s ease;
 }
 
 .zh-link-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--zh-shadow-lg);
-    border-color: transparent;
+    background: var(--zh-surface);
+    border-color: var(--zh-thumb-border);
 }
 
 .zh-link-avatar {
@@ -1108,7 +1253,10 @@ h1.zh-brand a:hover {
 }
 
 .zh-link-name {
-    font-weight: 600;
+    font-family: var(--zh-font-title);
+    font-size: 1.125rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .zh-link-card:hover .zh-link-name {
@@ -1126,18 +1274,20 @@ h1.zh-brand a:hover {
 
 /* ---------- 归档时间轴 ---------- */
 .zh-timeline {
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 .zh-timeline-year {
-    margin: 0 0 .6rem;
-    padding-bottom: .5rem;
+    margin: 0 0 1rem;
+    padding-bottom: .65rem;
     border-bottom: 1px solid var(--zh-border);
-    font-size: 1.15rem;
+    font-family: var(--zh-font-title);
+    font-size: 1.6rem;
 }
 
 .zh-timeline-year span {
     color: var(--zh-text-2);
+    font-family: var(--zh-font);
     font-size: .85rem;
     font-weight: 400;
 }
@@ -1150,7 +1300,7 @@ h1.zh-brand a:hover {
     display: flex;
     align-items: baseline;
     gap: 1rem;
-    padding: .5rem 0;
+    padding: .7rem 0;
 }
 
 .zh-tl-date {
@@ -1161,10 +1311,8 @@ h1.zh-brand a:hover {
 }
 
 .zh-timeline-list a {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .zh-timeline-list a:hover {
@@ -1173,12 +1321,11 @@ h1.zh-brand a:hover {
 
 /* ---------- 空状态 / 404 ---------- */
 .zh-empty {
-    padding: 3.5rem 1.5rem;
+    padding: 4rem 1rem;
     text-align: center;
     color: var(--zh-text-2);
-    background: var(--zh-surface);
-    border: 1px dashed var(--zh-border);
-    border-radius: var(--zh-radius);
+    border-top: 1px solid var(--zh-border);
+    border-bottom: 1px solid var(--zh-border);
 }
 
 .zh-404 {
@@ -1199,6 +1346,7 @@ h1.zh-brand a:hover {
 
 .zh-404-title {
     margin: .75rem 0 .4rem;
+    font-family: var(--zh-font-title);
     font-size: 1.3rem;
 }
 
@@ -1210,9 +1358,9 @@ h1.zh-brand a:hover {
 .zh-btn {
     display: inline-block;
     padding: .6em 1.6em;
-    border-radius: 10px;
+    border-radius: 6px;
     background: var(--zh-accent);
-    color: #fff;
+    color: var(--zh-on-accent);
     font-weight: 600;
 }
 
@@ -1222,12 +1370,13 @@ h1.zh-brand a:hover {
 
 /* ---------- 页脚 ---------- */
 .zh-footer {
+    width: min(820px, 100%);
+    align-self: center;
     border-top: 1px solid var(--zh-border);
-    margin-top: 2rem;
 }
 
 .zh-footer-inner {
-    max-width: 860px;
+    max-width: 820px;
     margin: 0 auto;
     padding: 2rem 1.25rem calc(2.25rem + env(safe-area-inset-bottom));
     text-align: center;
@@ -1263,11 +1412,9 @@ h1.zh-brand a:hover {
     border-radius: 50%;
     background: var(--zh-surface);
     color: var(--zh-text-2);
-    box-shadow: var(--zh-shadow-lg);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(8px);
-    transition: opacity .22s ease, transform .22s ease, visibility .22s, color .18s ease;
+    transition: opacity .18s ease, visibility .18s, color .18s ease;
 }
 
 .zh-backtop.show {
@@ -1303,18 +1450,12 @@ h1.zh-brand a:hover {
     height: auto;
     border-radius: 8px;
     box-shadow: 0 24px 64px rgba(0, 0, 0, .5);
-    animation: zh-zoom-in .22s ease;
     cursor: default;
 }
 
 @keyframes zh-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
-}
-
-@keyframes zh-zoom-in {
-    from { transform: scale(.94); }
-    to { transform: scale(1); }
 }
 
 /* ---------- 响应式 ---------- */
@@ -1408,57 +1549,79 @@ h1.zh-brand a:hover {
 
 @media (max-width: 620px) {
     .zh-main {
-        padding: 1.5rem 1rem 2.5rem;
+        padding: 2rem 1.25rem 3rem;
     }
 
     .zh-header-inner {
-        height: 56px;
-        gap: .75rem;
+        height: 60px;
+        gap: .5rem;
     }
 
     .zh-nav {
-        top: 56px;
-        max-height: calc(100dvh - 56px);
+        top: 60px;
+        max-height: calc(100dvh - 60px);
     }
 
     .zh-brand {
-        font-size: 1.05rem;
+        font-size: 1.2rem;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .zh-actions {
+        flex-shrink: 0;
+        gap: 0;
+    }
+
+    .zh-icon-btn {
+        width: 40px;
+        height: 44px;
     }
 
     .zh-card {
-        display: grid;
-        grid-template-columns: clamp(96px, 26vw, 132px) minmax(0, 1fr);
-        gap: .9rem;
-        padding: .9rem;
+        gap: 1rem;
+        padding: 1.5rem 0;
     }
 
     .zh-card-thumb {
-        flex: none;
-        width: 100%;
+        flex: 0 0 88px;
+        width: 88px;
         aspect-ratio: 1;
     }
 
     .zh-card-body {
-        justify-content: flex-start;
-        gap: .35rem;
+        gap: .45rem;
     }
 
     .zh-card-title {
-        font-size: 1.02rem;
+        font-size: 1.125rem;
     }
 
     .zh-card-excerpt {
-        font-size: .86rem;
-        -webkit-line-clamp: 2;
+        font-size: .875rem;
     }
 
     .zh-card-meta {
-        gap: .4em;
-        font-size: .74rem;
+        gap: .45em;
+        font-size: .75rem;
     }
 
-    .zh-post-title {
-        font-size: 1.45rem;
+    .zh-post-title,
+    .zh-page-title {
+        font-size: 1.625rem;
+    }
+
+    .zh-post-head {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .zh-content {
+        font-size: 1rem;
+    }
+
+    .zh-copy-btn {
+        min-height: 40px;
     }
 
     .zh-form-row {
@@ -1472,16 +1635,22 @@ h1.zh-brand a:hover {
     .zh-post-nav-item.zh-next {
         text-align: left;
     }
-}
 
-@media (max-width: 380px) {
-    .zh-card {
-        grid-template-columns: 88px minmax(0, 1fr);
-        gap: .75rem;
+    .zh-comment {
+        gap: .6rem;
     }
 
-    .zh-card-excerpt {
-        -webkit-line-clamp: 1;
+    .zh-comment-avatar img {
+        width: 28px;
+        height: 28px;
+    }
+
+    .zh-comment-children .zh-comment-children .zh-comment {
+        display: block;
+    }
+
+    .zh-comment-children .zh-comment-children .zh-comment-avatar {
+        display: none;
     }
 }
 

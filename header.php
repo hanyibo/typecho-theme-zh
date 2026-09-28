@@ -89,7 +89,9 @@ if ($zh_page > 1) {
     $zh_title .= ' - 第 ' . $zh_page . ' 页';
 }
 
-$zh_canonical = zh_current_url($this);
+/* Typecho 1.3 会为非首页的单页自动输出 canonical，沿用同一地址供 OG / JSON-LD 使用。 */
+$zh_native_canonical = $zh_is_single && !$zh_is_index;
+$zh_canonical = $zh_native_canonical ? (string) $this->getArchiveUrl() : zh_current_url($this);
 $zh_is_post = $zh_is_single && !$this->is('page');
 $zh_og_image = $zh_is_single ? zh_thumb_src($this) : zh_safe_url((string) $options->defaultThumb);
 if ($zh_og_image === '#') {
@@ -105,7 +107,7 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <meta charset="<?php $options->charset(); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?php echo htmlspecialchars($zh_title, ENT_QUOTES, 'UTF-8'); ?></title>
-<?php $this->header('description=&keywords=&author=&generator=&template=&pingback=&wlw=&xmlrpc=&rss1=&atom='); ?>
+<?php $this->header('description=&keywords=&author=&generator=&template=&pingback=&wlw=&xmlrpc=&rss1=&atom=&social='); ?>
 <meta name="description" content="<?php echo htmlspecialchars($zh_desc, ENT_QUOTES, 'UTF-8'); ?>">
 <?php if ($zh_keywords !== ''): ?>
 <meta name="keywords" content="<?php echo htmlspecialchars($zh_keywords, ENT_QUOTES, 'UTF-8'); ?>">
@@ -113,15 +115,17 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <?php if ($zh_is_search): ?>
 <meta name="robots" content="noindex, follow">
 <?php endif; ?>
+<?php if (!$zh_native_canonical): ?>
 <link rel="canonical" href="<?php echo htmlspecialchars($zh_canonical, ENT_QUOTES, 'UTF-8'); ?>">
+<?php endif; ?>
 
 <?php $zh_favicon = zh_safe_url(trim((string) $options->faviconUrl)); ?>
 <?php if ($zh_favicon !== '#'): ?>
 <link rel="icon" href="<?php echo htmlspecialchars($zh_favicon, ENT_QUOTES, 'UTF-8'); ?>">
 <?php endif; ?>
 
-<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e141d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f141c" media="(prefers-color-scheme: dark)">
 
 <meta property="og:site_name" content="<?php echo htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8'); ?>">
 <meta property="og:title" content="<?php echo htmlspecialchars($zh_title, ENT_QUOTES, 'UTF-8'); ?>">
@@ -174,15 +178,20 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 
 <script>
 (function () {
+    'use strict';
     var theme = null;
     try { theme = localStorage.getItem('zh-theme'); } catch (e) {}
     if (theme !== 'dark' && theme !== 'light') {
         theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     document.documentElement.setAttribute('data-theme', theme);
+    var themeMetas = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < themeMetas.length; i++) {
+        themeMetas[i].setAttribute('content', theme === 'dark' ? '#0f141c' : '#f7f8fa');
+    }
 })();
 </script>
-<link rel="stylesheet" href="<?php $options->themeUrl('/assets/css/style.css'); ?>">
+<link rel="stylesheet" href="<?php $options->themeUrl('/assets/css/style.css?v=' . (int) filemtime(__DIR__ . '/assets/css/style.css')); ?>">
 <?php if ($zh_load_prism): ?>
 <link rel="stylesheet" href="<?php $options->themeUrl('/assets/vendor/prism/prism-okaidia.min.css'); ?>">
 <script src="<?php $options->themeUrl('/assets/vendor/prism/prism-bundle.min.js'); ?>" defer></script>
@@ -191,6 +200,7 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 </head>
 <body>
 <a class="zh-skip" href="#main">跳到主要内容</a>
+<div class="zh-site">
 
 <header class="zh-header" id="zh-header">
     <div class="zh-header-inner">
