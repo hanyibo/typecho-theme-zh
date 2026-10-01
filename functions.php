@@ -11,6 +11,9 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 function themeConfig($form)
 {
+    // 后台配置页会加载本文件；清理在这里处理，不依赖前台首页和 themeInit。
+    $cacheClearMessage = zh_cache_maybe_clear();
+
     $defaultThumb = new \Typecho\Widget\Helper\Form\Element\Text(
         'defaultThumb',
         null,
@@ -189,18 +192,30 @@ function themeConfig($form)
     $cacheCount = count(glob(ZH_CACHE_DIR . '*.html') ?: array())
         - (is_file(ZH_CACHE_DIR . 'index.html') ? 1 : 0);
     $cacheClearUrl = \Typecho\Common::url(
-        '?zh_cache_clear=' . zh_cache_clear_token(),
-        (string) \Typecho\Widget::widget('\Widget\Options')->siteUrl
+        'options-theme.php',
+        (string) \Typecho\Widget::widget('\Widget\Options')->adminUrl
     );
+    // 单独提交清理请求，避免保存未提交的外观设置或触发其表单校验。
+    $cacheClearClick = "var f=document.createElement('form');f.method='post';"
+        . "f.action=this.getAttribute('data-zh-cache-url');"
+        . "var i=document.createElement('input');i.type='hidden';i.name='zh_cache_clear';"
+        . "i.value=this.getAttribute('data-zh-cache-token');f.appendChild(i);"
+        . "document.body.appendChild(f);f.submit();";
 
     $cacheManage = new \Typecho\Widget\Helper\Layout('ul', array('class' => 'typecho-option'));
     $cacheManageLi = new \Typecho\Widget\Helper\Layout('li');
     $cacheManageP = new \Typecho\Widget\Helper\Layout('p', array('class' => 'description'));
     $cacheManageP->html(
-        _t('当前缓存文件 %d 个。', $cacheCount)
-        . '<a href="' . htmlspecialchars($cacheClearUrl, ENT_QUOTES, 'UTF-8') . '" target="_blank">'
-        . _t('清空全部页面缓存') . '</a>'
-        . _t('（需管理员登录，点击后立即生效）')
+        ($cacheClearMessage !== null
+            ? '<strong role="status">' . htmlspecialchars($cacheClearMessage, ENT_QUOTES, 'UTF-8') . '</strong><br>'
+            : '')
+        . _t('当前缓存文件 %d 个。', $cacheCount)
+        . '<button type="button" class="btn" id="zh-cache-clear" data-zh-cache-url="'
+        . htmlspecialchars($cacheClearUrl, ENT_QUOTES, 'UTF-8') . '" data-zh-cache-token="'
+        . htmlspecialchars(zh_cache_clear_token(), ENT_QUOTES, 'UTF-8') . '" onclick="'
+        . htmlspecialchars($cacheClearClick, ENT_QUOTES, 'UTF-8') . '">'
+        . _t('清空全部页面缓存') . '</button>'
+        . _t('（需管理员登录，清理结果显示在本页，不会保存其他设置）')
     );
     $cacheManageLi->addItem($cacheManageP);
     $cacheManage->addItem($cacheManageLi);
@@ -243,9 +258,6 @@ function themeFields($layout)
 
 function themeInit($archive)
 {
-    // 外观设置页「清空页面缓存」链接的接收端（见 zh_cache_maybe_clear）
-    zh_cache_maybe_clear();
-
     // 正文统一处理：图片懒加载、外链新窗口打开
     if ($archive->is('single')) {
         $archive->content = zh_filter_content($archive->content);
@@ -742,71 +754,69 @@ function zh_cache_gc()
     }
 }
 
-/** 手动清空全部页面缓存（换主题、批量导入等场景使用） */
-function zh_cache_clear()
+/** 手动清空全部页面缓存；$failed 为删除失败数，-1 表示目录无法读取。 */
+function zh_cache_clear(&$failed = 0)
 {
+    $failed = 0;
     if (!is_dir(ZH_CACHE_DIR)) {
         return 0;
     }
+    $files = is_readable(ZH_CACHE_DIR) ? glob(ZH_CACHE_DIR . '*.html') : false;
+    if ($files === false) {
+        $failed = -1;
+        return 0;
+    }
     $count = 0;
-    foreach (glob(ZH_CACHE_DIR . '*.html') ?: array() as $file) {
+    foreach ($files as $file) {
         /* 防直访的空 index.html 与 .htaccess 一样属于保护文件，保留 */
         if (basename($file) === 'index.html') {
             continue;
         }
         if (@unlink($file)) {
             $count++;
+        } else {
+            $failed++;
         }
     }
     return $count;
 }
 
-/** 清空缓存链接的令牌：由站点密钥派生，无法伪造（防 CSRF） */
+/** 使用 Typecho 原生安全令牌，绑定当前管理员登录会话与清理操作。 */
 function zh_cache_clear_token()
 {
-    $secret = (string) \Typecho\Widget::widget('\Widget\Options')->secret;
-    return md5('ZH-theme-cache-clear|' . $secret);
+    return \Widget\Security::alloc()->getToken('zh-theme-cache-clear');
 }
 
 /**
- * 清空缓存入口：外观设置页「清空全部页面缓存」链接指向
- * https://站点/?zh_cache_clear=<token>，themeInit() 每次请求都会调用本函数。
- * 令牌 + 管理员身份双重校验，不符则按普通请求照常渲染，无任何副作用。
- *
- * 已知限制：站点把自定义 PHP 文件设为首页（frontPage 为 file:）时，
- * 首页请求不经过 themeInit()，该配置下链接无效。
+ * 外观设置页内处理独立 POST 请求，返回用于显示的结果；普通访问返回 null。
+ * 不经过前台路由，因此自定义首页、伪静态及前后台域名差异不影响清理入口。
  */
 function zh_cache_maybe_clear()
 {
-    if (!isset($_GET['zh_cache_clear']) || ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
-        return;
-    }
-
-    $given = (string) $_GET['zh_cache_clear'];
-    if ($given === '' || !hash_equals(zh_cache_clear_token(), $given)) {
-        return;
+    if (!defined('__TYPECHO_ADMIN__') || !__TYPECHO_ADMIN__
+        || ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST' || !isset($_POST['zh_cache_clear'])) {
+        return null;
     }
 
     try {
         $user = \Widget\User::alloc();
+        if (!$user->pass('administrator', true)) {
+            return _t('清理失败：请以管理员身份登录后重试。');
+        }
+        $given = $_POST['zh_cache_clear'];
+        if (!is_string($given) || $given === '' || !hash_equals(zh_cache_clear_token(), $given)) {
+            return _t('清理失败：安全令牌无效，请刷新外观设置页后重试。');
+        }
     } catch (\Throwable $e) {
-        return;
-    }
-    if (!$user->pass('administrator', true)) {
-        return;
+        return _t('清理失败：无法验证管理员身份，请重新登录后重试。');
     }
 
-    $count = zh_cache_clear();
-    $options = \Typecho\Widget::widget('\Widget\Options');
-    $homeUrl = (string) $options->siteUrl;
-    $adminUrl = \Typecho\Common::url('options-theme.php', (string) $options->adminUrl);
-
-    header('Content-Type: text/html; charset=UTF-8');
-    echo '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
-        . '<title>' . _t('页面缓存已清空') . '</title></head><body>'
-        . '<p>' . _t('已清空 %d 个页面缓存文件。', (int) $count) . '</p>'
-        . '<p><a href="' . htmlspecialchars($homeUrl, ENT_QUOTES, 'UTF-8') . '">' . _t('返回首页') . '</a>'
-        . ' · <a href="' . htmlspecialchars($adminUrl, ENT_QUOTES, 'UTF-8') . '">' . _t('返回外观设置') . '</a></p>'
-        . '</body></html>';
-    exit;
+    $count = zh_cache_clear($failed);
+    if ($failed < 0) {
+        return _t('清理失败：无法读取缓存目录，请检查 usr/cache/ZH-theme/ 的权限。');
+    }
+    if ($failed > 0) {
+        return _t('已清理 %d 个页面缓存文件，另有 %d 个清理失败，请检查 usr/cache/ZH-theme/ 的权限。', $count, $failed);
+    }
+    return _t('已清空 %d 个页面缓存文件。', $count);
 }
