@@ -16,7 +16,7 @@ function themeConfig($form)
         null,
         '',
         _t('默认缩略图地址'),
-        _t('分享图片等场景的兜底图，留空则使用主题内置默认图；无图文章在列表中不显示占位图')
+        _t('文章没有图片时使用的占位图，留空则使用主题内置默认图；同时作为 og:image 的兜底图')
     );
     $form->addInput($defaultThumb->addRule('url', _t('请填写合法的图片地址，或留空')));
 
@@ -590,7 +590,6 @@ function zh_cache_fingerprint()
     $options = \Typecho\Widget::widget('\Widget\Options');
 
     $raw = implode('|', array(
-        'render=2', // 素雅阅读：无图列表不再输出占位缩略图，使旧模板缓存失效。
         'posts=' . ($posts ? (int) $posts['cnt'] . ':' . (int) $posts['mtime'] : '0:0'),
         'protected=' . md5(json_encode($protected, JSON_INVALID_UTF8_SUBSTITUTE)),
         'comments=' . ($comments ? (string) $comments['cmt'] . ':' . (string) $comments['weighted'] : '0:0'),

@@ -15,10 +15,6 @@
         themeToggle.addEventListener('click', function () {
             var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             root.setAttribute('data-theme', next);
-            var themeMetas = document.querySelectorAll('meta[name="theme-color"]');
-            for (var i = 0; i < themeMetas.length; i++) {
-                themeMetas[i].setAttribute('content', next === 'dark' ? '#0f141c' : '#f7f8fa');
-            }
             try { localStorage.setItem('zh-theme', next); } catch (e) { /* 隐私模式忽略 */ }
         });
     }
@@ -171,21 +167,7 @@
         openLightbox(src, img.alt);
     });
 
-    /* ---------- 宽表格独立滚动，保留原生表格语义 ---------- */
-    document.querySelectorAll('.zh-content table').forEach(function (table) {
-        if (table.parentNode.classList.contains('zh-table-wrap')) {
-            return;
-        }
-        var wrap = document.createElement('div');
-        wrap.className = 'zh-table-wrap';
-        wrap.setAttribute('tabindex', '0');
-        wrap.setAttribute('role', 'region');
-        wrap.setAttribute('aria-label', '数据表格，可横向滚动');
-        table.parentNode.insertBefore(wrap, table);
-        wrap.appendChild(table);
-    });
-
-    /* ---------- 代码块工具栏 ---------- */
+    /* ---------- 代码块复制按钮 ---------- */
     function copyText(text, done) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
@@ -204,35 +186,21 @@
     }
 
     document.querySelectorAll('.zh-content pre').forEach(function (pre) {
-        if (pre.parentNode.classList.contains('zh-code-block')) {
+        if (pre.querySelector('.zh-copy-btn')) {
             return;
         }
-        var code = pre.querySelector('code');
-        var language = ((code ? code.className : '') + ' ' + pre.className).match(/\blang(?:uage)?-([a-z0-9_-]+)\b/i);
-        var languageName = language ? language[1].toUpperCase() : '代码';
-        var block = document.createElement('div');
-        block.className = 'zh-code-block';
-        var toolbar = document.createElement('div');
-        toolbar.className = 'zh-code-toolbar';
-        var label = document.createElement('span');
-        label.className = 'zh-code-language';
-        label.textContent = languageName;
-        toolbar.appendChild(label);
-
-        pre.parentNode.insertBefore(block, pre);
-        block.appendChild(toolbar);
-        block.appendChild(pre);
-        pre.setAttribute('tabindex', '0');
-        pre.setAttribute('role', 'region');
-        pre.setAttribute('aria-label', languageName + '代码，可横向滚动');
-
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'zh-copy-btn';
         btn.textContent = '复制';
         btn.setAttribute('aria-label', '复制代码');
         btn.addEventListener('click', function () {
-            copyText(pre.textContent, function (ok) {
+            var source = pre.cloneNode(true);
+            var copiedButton = source.querySelector('.zh-copy-btn');
+            if (copiedButton) {
+                copiedButton.parentNode.removeChild(copiedButton);
+            }
+            copyText(source.textContent, function (ok) {
                 btn.textContent = ok ? '已复制' : '复制失败';
                 btn.classList.toggle('zh-copied', ok);
                 setTimeout(function () {
@@ -241,6 +209,6 @@
                 }, 1600);
             });
         });
-        toolbar.appendChild(btn);
+        pre.appendChild(btn);
     });
 })();
