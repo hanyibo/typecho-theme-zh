@@ -11,10 +11,19 @@
 
     /* ---------- 深色模式切换 ---------- */
     var themeToggle = document.getElementById('zh-theme-toggle');
+    function updateThemeLabel() {
+        if (themeToggle) {
+            var label = root.getAttribute('data-theme') === 'dark' ? '切换浅色模式' : '切换深色模式';
+            themeToggle.setAttribute('aria-label', label);
+            themeToggle.setAttribute('title', label);
+        }
+    }
     if (themeToggle) {
+        updateThemeLabel();
         themeToggle.addEventListener('click', function () {
             var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             root.setAttribute('data-theme', next);
+            updateThemeLabel();
             try { localStorage.setItem('zh-theme', next); } catch (e) { /* 隐私模式忽略 */ }
         });
     }
@@ -45,6 +54,10 @@
         menuBtn.addEventListener('click', function () {
             var open = header.classList.toggle('zh-nav-open');
             menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open && search && searchBtn) {
+                search.classList.remove('zh-search-open');
+                searchBtn.setAttribute('aria-expanded', 'false');
+            }
         });
 
         document.addEventListener('click', function (e) {
@@ -58,6 +71,7 @@
             if (e.key === 'Escape' && header.classList.contains('zh-nav-open')) {
                 header.classList.remove('zh-nav-open');
                 menuBtn.setAttribute('aria-expanded', 'false');
+                menuBtn.focus();
             }
         });
     }
@@ -84,6 +98,10 @@
             var open = search.classList.toggle('zh-search-open');
             searchBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
             if (open) {
+                if (header && menuBtn) {
+                    header.classList.remove('zh-nav-open');
+                    menuBtn.setAttribute('aria-expanded', 'false');
+                }
                 var input = search.querySelector('input');
                 if (input) {
                     input.focus();
@@ -102,6 +120,7 @@
             if (e.key === 'Escape' && search.classList.contains('zh-search-open')) {
                 search.classList.remove('zh-search-open');
                 searchBtn.setAttribute('aria-expanded', 'false');
+                searchBtn.focus();
             }
         });
     }

@@ -120,8 +120,8 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <link rel="icon" href="<?php echo htmlspecialchars($zh_favicon, ENT_QUOTES, 'UTF-8'); ?>">
 <?php endif; ?>
 
-<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e141d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10151f" media="(prefers-color-scheme: dark)">
 
 <meta property="og:site_name" content="<?php echo htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8'); ?>">
 <meta property="og:title" content="<?php echo htmlspecialchars($zh_title, ENT_QUOTES, 'UTF-8'); ?>">
@@ -192,13 +192,10 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <body>
 <a class="zh-skip" href="#main">跳到主要内容</a>
 
+<div class="zh-site">
 <header class="zh-header" id="zh-header">
     <div class="zh-header-inner">
-        <?php if ($zh_is_index): ?>
-        <h1 class="zh-brand"><a href="<?php $options->siteUrl(); ?>"><?php $options->title(); ?></a></h1>
-        <?php else: ?>
-        <a class="zh-brand" href="<?php $options->siteUrl(); ?>"><?php $options->title(); ?></a>
-        <?php endif; ?>
+        <a class="zh-brand" href="<?php $options->siteUrl(); ?>"><span class="zh-brand-mark" aria-hidden="true"></span><span class="zh-brand-name"><?php echo htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8'); ?></span></a>
 
         <nav class="zh-nav" id="zh-nav" aria-label="主导航">
             <ul class="zh-menu">
