@@ -2,3 +2,11 @@ usr/cache/
 .remote-backup-*/
 .remote_backup_*/
 .maint/
+
+# IDE
+.trae/
+.vscode/
+.zcode/
+.idea/
+*.code-workspace
+
