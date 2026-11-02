@@ -5,49 +5,67 @@
 
 /* ---------- 设计变量 ---------- */
 :root {
-    --zh-bg: #f3f5f9;
+    --zh-bg: #f6f7f8;
     --zh-surface: #ffffff;
-    --zh-surface-soft: #f8f9fc;
-    --zh-text: #242c3d;
-    --zh-text-2: #657087;
-    --zh-border: #e4e8f0;
-    --zh-accent: #3d5fc4;
-    --zh-accent-weak: #edf1ff;
-    --zh-on-accent: #ffffff;
-    --zh-header-bg: rgba(243, 245, 249, .92);
-    --zh-hero-bg: #e8edfc;
-    --zh-thumb-bg: #edf3fb;
-    --zh-thumb-border: rgba(65, 87, 121, .14);
-    --zh-code-inline-bg: #eef0f4;
+    --zh-surface-soft: #f1f2f4;
+    --zh-text: #131417;
+    --zh-text-2: #666b73;
+    --zh-border: #e7e8eb;
+    --zh-border-strong: #d3d5da;
+    --zh-accent: #a8e85c;
+    --zh-accent-strong: #95d94b;
+    --zh-accent-text: #4a7612;
+    --zh-accent-weak: #eff9e1;
+    --zh-on-accent: #1c2608;
+    --zh-accent-2: #5b45e8;
+    --zh-accent-2-strong: #4a36d6;
+    --zh-accent-2-weak: #edeafe;
+    --zh-on-accent-2: #ffffff;
+    --zh-header-bg: rgba(246, 247, 248, .86);
+    --zh-hero-bg: #fbfbfc;
+    --zh-thumb-bg: #f0f1f3;
+    --zh-thumb-border: rgba(17, 18, 20, .10);
+    --zh-code-inline-bg: #f0f1f3;
     --zh-code-bg: #272822;
     --zh-code-fg: #f8f8f2;
-    --zh-shadow-sm: 0 4px 18px -8px rgba(28, 45, 74, .09);
-    --zh-shadow-lg: 0 14px 32px -12px rgba(28, 45, 74, .18);
-    --zh-radius: 20px;
+    --zh-shadow-sm: 0 1px 2px rgba(17, 18, 20, .04), 0 8px 24px -20px rgba(17, 18, 20, .18);
+    --zh-shadow-lg: 0 2px 4px rgba(17, 18, 20, .04), 0 20px 40px -28px rgba(17, 18, 20, .28);
+    --zh-radius: 14px;
+    --zh-radius-sm: 9px;
+    --zh-radius-xs: 6px;
+    --zh-ease: cubic-bezier(.22, .61, .36, 1);
     --zh-layout-width: 920px;
-    --zh-header-height: 76px;
+    --zh-header-height: 72px;
     --zh-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-        "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+        "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+        "Noto Sans SC", "Source Han Sans SC", sans-serif;
     color-scheme: light;
 }
 
 [data-theme="dark"] {
-    --zh-bg: #10151f;
-    --zh-surface: #1a2230;
-    --zh-surface-soft: #151d29;
-    --zh-text: #e6ebf4;
-    --zh-text-2: #a5b1c5;
-    --zh-border: #2c3749;
-    --zh-accent: #a1b7ff;
-    --zh-accent-weak: #283650;
-    --zh-on-accent: #131e36;
-    --zh-header-bg: rgba(16, 21, 31, .92);
-    --zh-hero-bg: #24334e;
-    --zh-thumb-bg: #202d3e;
-    --zh-thumb-border: rgba(212, 226, 249, .12);
-    --zh-code-inline-bg: #232933;
-    --zh-shadow-sm: 0 4px 18px -8px rgba(0, 0, 0, .28);
-    --zh-shadow-lg: 0 14px 32px -12px rgba(0, 0, 0, .45);
+    --zh-bg: #0d0f12;
+    --zh-surface: #16181c;
+    --zh-surface-soft: #1e2126;
+    --zh-text: #f1f2f4;
+    --zh-text-2: #a3a8b0;
+    --zh-border: #282c33;
+    --zh-border-strong: #3c424b;
+    --zh-accent: #a8e85c;
+    --zh-accent-strong: #bcf574;
+    --zh-accent-text: #a8e85c;
+    --zh-accent-weak: #1e2b12;
+    --zh-on-accent: #161f0c;
+    --zh-accent-2: #9a8bff;
+    --zh-accent-2-strong: #8a78ff;
+    --zh-accent-2-weak: #262040;
+    --zh-on-accent-2: #0d0f12;
+    --zh-header-bg: rgba(13, 15, 18, .86);
+    --zh-hero-bg: #191c21;
+    --zh-thumb-bg: #1d2025;
+    --zh-thumb-border: rgba(241, 242, 244, .12);
+    --zh-code-inline-bg: #1d2026;
+    --zh-shadow-sm: 0 1px 2px rgba(0, 0, 0, .25), 0 8px 24px -20px rgba(0, 0, 0, .6);
+    --zh-shadow-lg: 0 2px 4px rgba(0, 0, 0, .3), 0 20px 40px -28px rgba(0, 0, 0, .7);
     color-scheme: dark;
 }
 
@@ -73,13 +91,14 @@ body {
     background: var(--zh-bg);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    transition: background-color .25s ease, color .25s ease;
+    font-feature-settings: "kern" 1;
+    transition: background-color .25s var(--zh-ease), color .25s var(--zh-ease);
 }
 
 a {
     color: inherit;
     text-decoration: none;
-    transition: color .18s ease;
+    transition: color .2s var(--zh-ease);
 }
 
 img {
@@ -109,9 +128,9 @@ button {
 }
 
 :focus-visible {
-    outline: 2px solid var(--zh-accent);
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline: 2px solid var(--zh-accent-text);
+    outline-offset: 3px;
+    border-radius: 6px;
 }
 
 .zh-skip {
@@ -140,7 +159,7 @@ button {
     width: 100%;
     max-width: 860px;
     margin: 0 auto;
-    padding: 2.5rem 1.5rem 4rem;
+    padding: 3rem 1.5rem 4.5rem;
     flex: 1;
 }
 
@@ -154,10 +173,10 @@ button {
     top: 0;
     z-index: 100;
     background: var(--zh-header-bg);
-    -webkit-backdrop-filter: saturate(1.5) blur(14px);
-    backdrop-filter: saturate(1.5) blur(14px);
+    -webkit-backdrop-filter: saturate(1.2) blur(16px);
+    backdrop-filter: saturate(1.2) blur(16px);
     border-bottom: 1px solid var(--zh-border);
-    transition: box-shadow .25s ease;
+    transition: box-shadow .25s var(--zh-ease);
 }
 
 .zh-header.zh-scrolled {
@@ -177,23 +196,24 @@ button {
 .zh-brand {
     display: inline-flex;
     align-items: center;
-    gap: .65rem;
+    gap: .55rem;
     flex-shrink: 0;
     min-width: 0;
     max-width: 220px;
-    font-size: 1.125rem;
-    font-weight: 700;
-    letter-spacing: .02em;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: .01em;
     white-space: nowrap;
 }
 
 .zh-brand-mark {
-    width: 12px;
-    height: 12px;
-    flex: 0 0 12px;
-    border: 3px solid var(--zh-accent);
-    border-radius: 4px;
-    transform: rotate(-12deg);
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border: 0;
+    border-radius: 3px;
+    background: var(--zh-accent);
+    transform: rotate(-8deg);
 }
 
 .zh-brand-name {
@@ -202,7 +222,7 @@ button {
 }
 
 .zh-brand:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-nav {
@@ -218,25 +238,37 @@ button {
 }
 
 .zh-item > a {
+    position: relative;
     display: flex;
     align-items: center;
     gap: .3em;
-    padding: .45em .8em;
-    border-radius: 8px;
-    font-size: .95rem;
+    padding: .45em .75em;
+    border-radius: var(--zh-radius-xs);
+    font-size: .94rem;
     color: var(--zh-text-2);
     white-space: nowrap;
 }
 
 .zh-item > a:hover {
     color: var(--zh-text);
-    background: var(--zh-accent-weak);
+    background: var(--zh-surface-soft);
 }
 
 .zh-item.active > a {
-    color: var(--zh-accent);
-    background: var(--zh-accent-weak);
+    color: var(--zh-accent-text);
+    background: transparent;
     font-weight: 600;
+}
+
+.zh-item.active > a::after {
+    content: '';
+    position: absolute;
+    left: .75em;
+    right: .75em;
+    bottom: .15em;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--zh-accent);
 }
 
 .zh-caret {
@@ -257,13 +289,13 @@ button {
     list-style: none;
     background: var(--zh-surface);
     border: 1px solid var(--zh-border);
-    border-radius: 12px;
+    border-radius: var(--zh-radius-sm);
     box-shadow: var(--zh-shadow-lg);
-    padding: .4rem;
+    padding: .45rem;
     opacity: 0;
     visibility: hidden;
     transform: translateY(6px);
-    transition: opacity .18s ease, transform .18s ease, visibility .18s;
+    transition: opacity .18s var(--zh-ease), transform .18s var(--zh-ease), visibility .18s;
 }
 
 /* 填平链接与下拉卡片之间的间隙，鼠标移入时保持展开。 */
@@ -294,7 +326,7 @@ button {
 
 .zh-submenu a:hover {
     background: var(--zh-accent-weak);
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-submenu-count {
@@ -325,18 +357,18 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 8px;
     background: transparent;
     color: var(--zh-text-2);
-    transition: background-color .18s ease, color .18s ease;
+    transition: background-color .18s var(--zh-ease), color .18s var(--zh-ease);
 }
 
 .zh-icon-btn:hover {
-    background: var(--zh-accent-weak);
-    color: var(--zh-accent);
+    background: var(--zh-surface-soft);
+    color: var(--zh-accent-text);
 }
 
 .zh-ico-moon,
@@ -363,23 +395,23 @@ button {
     top: calc(100% + 16px);
     right: 0;
     width: min(320px, calc(100vw - 32px));
-    padding: .5rem;
+    padding: .45rem;
     border: 1px solid var(--zh-border);
-    border-radius: 14px;
+    border-radius: var(--zh-radius-sm);
     background: var(--zh-surface);
     box-shadow: var(--zh-shadow-lg);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-4px);
-    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+    transition: opacity .2s var(--zh-ease), transform .2s var(--zh-ease), visibility .2s;
 }
 
 .zh-search input {
     width: 100%;
-    height: 44px;
+    height: 42px;
     padding: 0 .9em;
     border: 1px solid var(--zh-border);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--zh-surface-soft);
     color: var(--zh-text);
     font-size: 1rem;
@@ -387,7 +419,7 @@ button {
 }
 
 .zh-search input:focus {
-    border-color: var(--zh-accent);
+    border-color: var(--zh-accent-text);
     box-shadow: 0 0 0 3px var(--zh-accent-weak);
 }
 
@@ -415,12 +447,12 @@ button {
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
-    padding: 2.5rem;
-    margin-bottom: 2.25rem;
+    padding: 2.25rem 2.5rem;
+    margin-bottom: 2rem;
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
-    background: linear-gradient(115deg, var(--zh-surface) 25%, var(--zh-hero-bg));
-    box-shadow: var(--zh-shadow-sm);
+    background: linear-gradient(120deg, var(--zh-surface) 35%, var(--zh-hero-bg));
+    box-shadow: none;
 }
 
 .zh-home-intro {
@@ -428,25 +460,38 @@ button {
 }
 
 .zh-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .55em;
     margin: 0 0 .7rem;
-    color: var(--zh-accent);
-    font-size: .75rem;
+    color: var(--zh-accent-text);
+    font-size: .72rem;
     font-weight: 600;
-    letter-spacing: .16em;
+    letter-spacing: .18em;
+}
+
+.zh-eyebrow::before {
+    content: '';
+    width: 18px;
+    height: 1px;
+    flex: 0 0 18px;
+    background: var(--zh-accent);
 }
 
 .zh-home-title {
     margin: 0;
-    font-size: 2rem;
-    line-height: 1.4;
-    letter-spacing: -.03em;
+    font-size: clamp(1.75rem, 3vw, 2.1rem);
+    line-height: 1.35;
+    font-weight: 600;
+    letter-spacing: -.025em;
     overflow-wrap: anywhere;
 }
 
 .zh-home-description {
-    margin: .7rem 0 0;
+    margin: .55rem 0 0;
     color: var(--zh-text-2);
-    font-size: .95rem;
+    font-size: .92rem;
+    line-height: 1.8;
     overflow-wrap: anywhere;
 }
 
@@ -456,20 +501,20 @@ button {
     justify-content: center;
     flex-shrink: 0;
     gap: .5rem;
-    min-height: 42px;
+    min-height: 40px;
     padding: .5rem .9rem;
     border: 1px solid var(--zh-border);
-    border-radius: 12px;
-    background: var(--zh-surface);
-    color: var(--zh-accent);
-    font-size: .82rem;
+    border-radius: var(--zh-radius-sm);
+    background: transparent;
+    color: var(--zh-text-2);
+    font-size: .8rem;
     font-weight: 500;
-    transition: border-color .2s ease, box-shadow .2s ease;
+    transition: border-color .2s var(--zh-ease), color .2s var(--zh-ease);
 }
 
 .zh-home-feed:hover {
-    border-color: var(--zh-accent);
-    box-shadow: var(--zh-shadow-sm);
+    border-color: var(--zh-accent-text);
+    color: var(--zh-accent-text);
 }
 
 .zh-section-head {
@@ -477,18 +522,21 @@ button {
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
-    margin: 0 .25rem 1rem;
+    margin: 0 0 1rem;
+    padding-bottom: .65rem;
+    border-bottom: 1px solid var(--zh-border);
 }
 
 .zh-section-title {
     margin: 0;
-    font-size: 1rem;
+    font-size: .95rem;
     font-weight: 600;
+    letter-spacing: .01em;
 }
 
 .zh-section-count {
     color: var(--zh-text-2);
-    font-size: .8rem;
+    font-size: .78rem;
     font-variant-numeric: tabular-nums;
 }
 
@@ -496,41 +544,41 @@ button {
 .zh-post-list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .zh-card {
     display: flex;
-    gap: 1.75rem;
+    gap: 1.6rem;
     background: var(--zh-surface);
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
-    padding: 1.5rem;
-    box-shadow: var(--zh-shadow-sm);
-    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    padding: 1.35rem 1.5rem;
+    box-shadow: none;
+    transition: transform .25s var(--zh-ease), box-shadow .25s var(--zh-ease), border-color .25s var(--zh-ease);
 }
 
 .zh-card:hover {
-    box-shadow: var(--zh-shadow-lg);
-    border-color: var(--zh-border);
+    box-shadow: var(--zh-shadow-sm);
+    border-color: var(--zh-border-strong);
 }
 
 @media (hover: hover) {
     .zh-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
     }
 }
 
 .zh-card:focus-within {
-    border-color: var(--zh-accent);
+    border-color: var(--zh-accent-text);
 }
 
 .zh-card-thumb {
     position: relative;
-    flex: 0 0 224px;
+    flex: 0 0 216px;
     align-self: center;
     display: block;
-    border-radius: 13px;
+    border-radius: var(--zh-radius-sm);
     overflow: hidden;
     aspect-ratio: 16 / 10;
     background: var(--zh-thumb-bg);
@@ -550,7 +598,7 @@ button {
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform .35s ease;
+    transition: transform .5s var(--zh-ease);
 }
 
 .zh-card-thumb .zh-thumb-fallback {
@@ -563,7 +611,7 @@ button {
 }
 
 .zh-card:hover .zh-card-thumb .zh-thumb {
-    transform: scale(1.045);
+    transform: scale(1.03);
 }
 
 .zh-card-body {
@@ -577,10 +625,10 @@ button {
 
 .zh-card-title {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.55;
-    letter-spacing: -.01em;
+    letter-spacing: -.005em;
     overflow-wrap: anywhere;
 }
 
@@ -593,14 +641,14 @@ button {
 }
 
 .zh-card-title a:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-card-excerpt {
     margin: 0;
     color: var(--zh-text-2);
-    font-size: .9rem;
-    line-height: 1.8;
+    font-size: .875rem;
+    line-height: 1.75;
     overflow-wrap: anywhere;
     overflow: hidden;
     display: -webkit-box;
@@ -612,32 +660,45 @@ button {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: .6em;
+    gap: .55em;
     margin-top: .1rem;
-    font-size: .8rem;
+    font-size: .78rem;
     color: var(--zh-text-2);
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
 }
 
 .zh-card-meta a:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-card-cat {
-    padding: .1em .55em;
-    border-radius: 999px;
+    padding: .08em .5em;
+    border: 1px solid var(--zh-border);
+    border-radius: var(--zh-radius-xs);
+    background: transparent;
+    color: var(--zh-text-2);
+    font-size: .72rem;
+    line-height: 1.6;
+    transition: border-color .2s var(--zh-ease), color .2s var(--zh-ease), background-color .2s var(--zh-ease);
+}
+
+.zh-card-cat a {
+    text-decoration: none;
+}
+
+.zh-card-cat:hover {
+    border-color: var(--zh-accent-text);
     background: var(--zh-accent-weak);
-    color: var(--zh-accent);
-    line-height: 1.55;
+    color: var(--zh-accent-text);
 }
 
 .zh-dot {
-    width: 3px;
-    height: 3px;
+    width: 2px;
+    height: 2px;
     border-radius: 50%;
     background: var(--zh-text-2);
-    opacity: .55;
+    opacity: .4;
     flex: 0 0 auto;
 }
 
@@ -656,11 +717,11 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 42px;
-    min-height: 42px;
+    min-width: 40px;
+    min-height: 40px;
     padding: .45em .85em;
     border: 1px solid var(--zh-border);
-    border-radius: 9px;
+    border-radius: 8px;
     background: var(--zh-surface);
     font-size: .9rem;
     font-weight: 500;
@@ -668,8 +729,8 @@ button {
 }
 
 .page-navigator li a:hover {
-    color: var(--zh-accent);
-    border-color: var(--zh-accent);
+    color: var(--zh-accent-text);
+    border-color: var(--zh-accent-text);
 }
 
 .page-navigator li.current a,
@@ -677,35 +738,37 @@ button {
     background: var(--zh-accent);
     border-color: var(--zh-accent);
     color: var(--zh-on-accent);
-    box-shadow: var(--zh-shadow-sm);
 }
 
 /* ---------- 页面/归档标题 ---------- */
 .zh-page-head {
     margin-bottom: 2rem;
-    padding: 1.75rem 2rem;
-    border: 1px solid var(--zh-border);
-    border-radius: var(--zh-radius);
-    background: var(--zh-surface);
-    box-shadow: var(--zh-shadow-sm);
+    padding: 0 0 1.25rem;
+    border: 0;
+    border-bottom: 1px solid var(--zh-border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .zh-page-title {
     margin: 0 0 .35rem;
-    font-size: 1.65rem;
+    font-size: 1.5rem;
+    font-weight: 600;
     line-height: 1.5;
+    letter-spacing: -.02em;
     overflow-wrap: anywhere;
 }
 
 .zh-page-sub {
-    margin: 0;
+    margin: .35rem 0 0;
     color: var(--zh-text-2);
-    font-size: .9rem;
+    font-size: .85rem;
 }
 
 /* ---------- 文章页 ---------- */
 .zh-post {
-    padding: 2.75rem;
+    padding: 2.5rem;
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
     background: var(--zh-surface);
@@ -713,15 +776,16 @@ button {
 }
 
 .zh-post-head {
-    margin-bottom: 2.25rem;
-    padding-bottom: 1.75rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
     border-bottom: 1px solid var(--zh-border);
 }
 
 .zh-post-title {
     margin: 0 0 1rem;
-    font-size: 2rem;
-    line-height: 1.45;
+    font-size: clamp(1.75rem, 3vw, 2rem);
+    font-weight: 600;
+    line-height: 1.4;
     letter-spacing: -.025em;
     overflow-wrap: anywhere;
 }
@@ -730,15 +794,15 @@ button {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: .55em;
+    gap: .5em;
     color: var(--zh-text-2);
-    font-size: .86rem;
+    font-size: .82rem;
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
 }
 
 .zh-post-meta a:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-post-foot {
@@ -752,15 +816,19 @@ button {
 }
 
 .zh-post-tags a {
-    padding: .28em .85em;
-    border-radius: 999px;
-    background: var(--zh-accent-weak);
-    color: var(--zh-accent);
-    font-size: .82rem;
+    padding: .22em .7em;
+    border: 1px solid var(--zh-border);
+    border-radius: var(--zh-radius-xs);
+    background: transparent;
+    color: var(--zh-text-2);
+    font-size: .78rem;
+    transition: border-color .2s var(--zh-ease), color .2s var(--zh-ease), background-color .2s var(--zh-ease);
 }
 
 .zh-post-tags a:hover {
-    opacity: .8;
+    border-color: var(--zh-accent-text);
+    background: var(--zh-accent-weak);
+    color: var(--zh-accent-text);
 }
 
 .zh-post-nav {
@@ -781,25 +849,27 @@ button {
 }
 
 .zh-post-nav-item a {
-    padding: 1rem;
+    padding: .9rem 1rem;
     border: 1px solid var(--zh-border);
-    border-radius: 12px;
+    border-radius: var(--zh-radius-sm);
     background: var(--zh-surface-soft);
     color: var(--zh-text-2);
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    transition: border-color .2s var(--zh-ease), color .2s var(--zh-ease);
 }
 
 .zh-post-nav-item a:hover {
-    color: var(--zh-accent);
+    border-color: var(--zh-accent-text);
+    color: var(--zh-accent-text);
 }
 
 /* ---------- 正文排版 ---------- */
 .zh-content {
-    font-size: 1.025rem;
-    line-height: 1.95;
+    font-size: 1.0625rem;
+    line-height: 1.92;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -816,17 +886,17 @@ button {
 .zh-content h6 {
     margin: 2em 0 .8em;
     line-height: 1.45;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .zh-content h2 {
-    font-size: 1.35em;
-    padding-bottom: .35em;
+    font-size: 1.3em;
+    padding-bottom: .4em;
     border-bottom: 1px solid var(--zh-border);
 }
 
 .zh-content h3 {
-    font-size: 1.18em;
+    font-size: 1.15em;
 }
 
 .zh-content h4,
@@ -836,14 +906,15 @@ button {
 }
 
 .zh-content p {
-    margin: 1.1em 0;
+    margin: 1.15em 0;
 }
 
 .zh-content a {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
     text-decoration: underline;
-    text-decoration-color: var(--zh-border);
-    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--zh-border-strong);
+    text-underline-offset: 3px;
 }
 
 .zh-content a:hover {
@@ -852,10 +923,10 @@ button {
 
 .zh-content blockquote {
     margin: 1.4em 0;
-    padding: .35em 1.3em;
-    border-left: 3px solid var(--zh-accent);
-    background: var(--zh-accent-weak);
-    border-radius: 0 10px 10px 0;
+    padding: .3em 1.1em;
+    border-left: 2px solid var(--zh-accent);
+    background: var(--zh-surface-soft);
+    border-radius: 0 8px 8px 0;
     color: var(--zh-text-2);
 }
 
@@ -865,7 +936,7 @@ button {
 
 .zh-content ul,
 .zh-content ol {
-    padding-left: 1.6em;
+    padding-left: 1.5em;
     margin: 1.1em 0;
 }
 
@@ -874,28 +945,29 @@ button {
 }
 
 .zh-content img {
-    border-radius: 10px;
+    border-radius: 9px;
+    box-shadow: 0 0 0 1px var(--zh-thumb-border);
     display: block;
-    margin: 1.4em auto;
+    margin: 1.3em auto;
     cursor: zoom-in;
 }
 
 .zh-content code {
     padding: .18em .45em;
-    border-radius: 6px;
+    border-radius: 5px;
     background: var(--zh-code-inline-bg);
-    font-size: .88em;
+    font-size: .86em;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 .zh-content pre {
     margin: 1.5em 0;
-    padding: 1.1em 1.2em;
-    border-radius: 12px;
+    padding: 1em 1.1em;
+    border-radius: 10px;
     background: var(--zh-code-bg);
     color: var(--zh-code-fg);
     overflow: auto;
-    font-size: .875rem;
+    font-size: .84rem;
     line-height: 1.7;
     position: relative;
 }
@@ -921,20 +993,21 @@ button {
 .zh-content th,
 .zh-content td {
     border: 1px solid var(--zh-border);
-    padding: .55em .9em;
+    padding: .5em .8em;
     min-width: 7em;
     text-align: left;
     vertical-align: top;
 }
 
 .zh-content th {
-    background: var(--zh-code-inline-bg);
+    background: var(--zh-surface-soft);
+    font-weight: 600;
 }
 
 .zh-content hr {
     border: 0;
     border-top: 1px solid var(--zh-border);
-    margin: 2.5em 0;
+    margin: 2.25em 0;
 }
 
 .zh-content figure {
@@ -959,12 +1032,12 @@ button {
     right: .6rem;
     padding: .25em .7em;
     border: 0;
-    border-radius: 7px;
+    border-radius: var(--zh-radius-xs);
     background: rgba(255, 255, 255, .12);
     color: #c8cdd6;
-    font-size: .75rem;
+    font-size: .72rem;
     opacity: 0;
-    transition: opacity .18s ease, background-color .18s ease;
+    transition: opacity .18s var(--zh-ease), background-color .18s var(--zh-ease);
 }
 
 .zh-content pre:hover .zh-copy-btn,
@@ -982,14 +1055,15 @@ button {
 
 /* ---------- 评论 ---------- */
 .zh-comments {
-    margin-top: 3rem;
-    padding-top: 2rem;
+    margin-top: 2.75rem;
+    padding-top: 1.75rem;
     border-top: 1px solid var(--zh-border);
 }
 
 .zh-comments-title {
     margin: 0 0 1rem;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
+    font-weight: 600;
 }
 
 .zh-comment-list {
@@ -998,8 +1072,8 @@ button {
 
 .zh-comment {
     display: flex;
-    gap: .85rem;
-    padding: 1.1rem 0;
+    gap: .8rem;
+    padding: 1rem 0;
     border-top: 1px solid var(--zh-border);
 }
 
@@ -1017,8 +1091,8 @@ button {
 }
 
 .zh-comment-avatar img {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: var(--zh-accent-weak);
     display: block;
@@ -1041,7 +1115,7 @@ button {
 .zh-comment-author {
     font-weight: 600;
     color: var(--zh-text);
-    font-size: .92rem;
+    font-size: .9rem;
 }
 
 .zh-comment-by-author .zh-comment-author::after {
@@ -1049,8 +1123,8 @@ button {
     margin-left: .5em;
     padding: .1em .5em;
     border-radius: 999px;
-    background: var(--zh-accent-weak);
-    color: var(--zh-accent);
+    background: var(--zh-accent-2-weak);
+    color: var(--zh-accent-2);
     font-size: .72rem;
     font-weight: 500;
     vertical-align: 1px;
@@ -1076,7 +1150,7 @@ button {
 }
 
 .zh-comment-actions a:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-cancel-reply {
@@ -1085,7 +1159,7 @@ button {
 }
 
 .zh-cancel-reply a {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
     display: none;
 }
 
@@ -1099,12 +1173,13 @@ button {
     padding: 1.5rem;
     background: var(--zh-surface-soft);
     border: 1px solid var(--zh-border);
-    border-radius: var(--zh-radius);
+    border-radius: 12px;
 }
 
 .zh-respond-title {
     margin: 0 0 .9rem;
-    font-size: 1rem;
+    font-size: .95rem;
+    font-weight: 600;
 }
 
 .zh-form-row {
@@ -1117,20 +1192,20 @@ button {
 .zh-respond input,
 .zh-respond textarea {
     width: 100%;
-    padding: .65em .9em;
+    padding: .6em .85em;
     border: 1px solid var(--zh-border);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--zh-surface);
     color: var(--zh-text);
     font-family: inherit;
     font-size: 1rem;
     outline: none;
-    transition: border-color .18s ease;
+    transition: border-color .18s var(--zh-ease);
 }
 
 .zh-respond input:focus,
 .zh-respond textarea:focus {
-    border-color: var(--zh-accent);
+    border-color: var(--zh-accent-text);
     box-shadow: 0 0 0 3px var(--zh-accent-weak);
 }
 
@@ -1147,7 +1222,7 @@ button {
 }
 
 .zh-respond-user a {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
     margin: 0 .25em;
 }
 
@@ -1159,23 +1234,23 @@ button {
 }
 
 .zh-btn-submit {
-    min-height: 44px;
+    min-height: 42px;
     padding: .55em 1.5em;
     border: 0;
-    border-radius: 10px;
-    background: var(--zh-accent);
-    color: var(--zh-on-accent);
+    border-radius: 8px;
+    background: var(--zh-accent-2);
+    color: var(--zh-on-accent-2);
     font-size: .92rem;
     font-weight: 600;
-    transition: opacity .18s ease, transform .18s ease;
+    transition: background-color .2s var(--zh-ease), transform .18s var(--zh-ease);
 }
 
 .zh-btn-submit:hover {
-    opacity: .88;
+    background: var(--zh-accent-2-strong);
 }
 
 .zh-btn-submit:active {
-    transform: scale(.97);
+    transform: scale(.98);
 }
 
 .zh-form-hint {
@@ -1203,32 +1278,32 @@ button {
     background: var(--zh-surface);
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
-    box-shadow: var(--zh-shadow-sm);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    box-shadow: none;
+    transition: transform .25s var(--zh-ease), box-shadow .25s var(--zh-ease), border-color .25s var(--zh-ease);
 }
 
 .zh-cat-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--zh-shadow-lg);
-    border-color: var(--zh-accent);
+    box-shadow: var(--zh-shadow-sm);
+    border-color: var(--zh-accent-text);
 }
 
 .zh-cat-name {
-    font-weight: 700;
+    font-weight: 600;
     overflow-wrap: anywhere;
 }
 
 .zh-cat-card:hover .zh-cat-name {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-cat-count {
-    font-size: .82rem;
+    font-size: .8rem;
     color: var(--zh-text-2);
 }
 
 .zh-cat-desc {
-    font-size: .85rem;
+    font-size: .8rem;
     color: var(--zh-text-2);
     overflow: hidden;
     display: -webkit-box;
@@ -1251,27 +1326,27 @@ button {
     background: var(--zh-surface);
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
-    box-shadow: var(--zh-shadow-sm);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    box-shadow: none;
+    transition: transform .25s var(--zh-ease), box-shadow .25s var(--zh-ease), border-color .25s var(--zh-ease);
 }
 
 .zh-link-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--zh-shadow-lg);
-    border-color: var(--zh-accent);
+    box-shadow: var(--zh-shadow-sm);
+    border-color: var(--zh-accent-text);
 }
 
 .zh-link-avatar {
-    flex: 0 0 44px;
-    height: 44px;
+    flex: 0 0 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--zh-accent-weak);
-    color: var(--zh-accent);
-    font-size: 1.2rem;
-    font-weight: 700;
+    color: var(--zh-accent-text);
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .zh-link-info {
@@ -1286,12 +1361,12 @@ button {
 }
 
 .zh-link-card:hover .zh-link-name {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-link-desc {
     color: var(--zh-text-2);
-    font-size: .84rem;
+    font-size: .8rem;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -1301,18 +1376,19 @@ button {
 /* ---------- 归档时间轴 ---------- */
 .zh-timeline {
     margin-bottom: 1.25rem;
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 1.75rem;
     border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
     background: var(--zh-surface);
-    box-shadow: var(--zh-shadow-sm);
+    box-shadow: none;
 }
 
 .zh-timeline-year {
     margin: 0 0 .6rem;
     padding-bottom: .5rem;
     border-bottom: 1px solid var(--zh-border);
-    font-size: 1.15rem;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .zh-timeline-year span {
@@ -1329,13 +1405,13 @@ button {
     display: flex;
     align-items: baseline;
     gap: 1rem;
-    padding: .75rem 0;
+    padding: .65rem 0;
 }
 
 .zh-tl-date {
     flex: 0 0 44px;
     color: var(--zh-text-2);
-    font-size: .84rem;
+    font-size: .8rem;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1347,16 +1423,16 @@ button {
 }
 
 .zh-timeline-list a:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 /* ---------- 空状态 / 404 ---------- */
 .zh-empty {
-    padding: 3.5rem 1.5rem;
+    padding: 3rem 1.5rem;
     text-align: center;
     color: var(--zh-text-2);
-    background: var(--zh-surface);
-    border: 1px dashed var(--zh-border);
+    background: var(--zh-surface-soft);
+    border: 1px solid var(--zh-border);
     border-radius: var(--zh-radius);
 }
 
@@ -1367,18 +1443,19 @@ button {
 
 .zh-404-code {
     margin: 0;
-    font-size: 5.5rem;
-    font-weight: 800;
+    font-size: 4.5rem;
+    font-weight: 600;
     line-height: 1;
-    letter-spacing: .06em;
+    letter-spacing: .04em;
     color: var(--zh-accent);
-    opacity: .35;
+    opacity: .3;
     font-variant-numeric: tabular-nums;
 }
 
 .zh-404-title {
     margin: .75rem 0 .4rem;
     font-size: 1.3rem;
+    font-weight: 600;
 }
 
 .zh-404-text {
@@ -1389,14 +1466,16 @@ button {
 .zh-btn {
     display: inline-block;
     padding: .6em 1.6em;
-    border-radius: 10px;
-    background: var(--zh-accent);
-    color: var(--zh-on-accent);
+    border-radius: 8px;
+    background: var(--zh-accent-2);
+    color: var(--zh-on-accent-2);
     font-weight: 600;
+    transition: background-color .2s var(--zh-ease);
 }
 
 .zh-btn:hover {
-    opacity: .88;
+    background: var(--zh-accent-2-strong);
+    color: var(--zh-on-accent-2);
 }
 
 /* ---------- 页脚 ---------- */
@@ -1407,10 +1486,10 @@ button {
 .zh-footer-inner {
     max-width: var(--zh-layout-width);
     margin: 0 auto;
-    padding: 2rem 1.25rem calc(2.25rem + env(safe-area-inset-bottom));
+    padding: 2.25rem 1.25rem calc(2.25rem + env(safe-area-inset-bottom));
     text-align: center;
     color: var(--zh-text-2);
-    font-size: .84rem;
+    font-size: .8rem;
     border-top: 1px solid var(--zh-border);
 }
 
@@ -1419,12 +1498,12 @@ button {
 }
 
 .zh-footer-meta a:hover {
-    color: var(--zh-accent);
+    color: var(--zh-accent-text);
 }
 
 .zh-footer-sep {
     margin: 0 .5em;
-    opacity: .5;
+    opacity: .35;
 }
 
 /* ---------- 返回顶部 ---------- */
@@ -1433,20 +1512,20 @@ button {
     right: max(1.25rem, env(safe-area-inset-right));
     bottom: calc(1.5rem + env(safe-area-inset-bottom));
     z-index: 90;
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--zh-border);
-    border-radius: 14px;
-    background: var(--zh-surface);
-    color: var(--zh-text-2);
-    box-shadow: var(--zh-shadow-lg);
+    border: 0;
+    border-radius: 50%;
+    background: var(--zh-accent-2);
+    color: var(--zh-on-accent-2);
+    box-shadow: var(--zh-shadow-sm);
     opacity: 0;
     visibility: hidden;
     transform: translateY(8px);
-    transition: opacity .22s ease, transform .22s ease, visibility .22s, color .18s ease;
+    transition: opacity .22s var(--zh-ease), transform .22s var(--zh-ease), visibility .22s, background-color .18s var(--zh-ease);
 }
 
 .zh-backtop.show {
@@ -1456,7 +1535,8 @@ button {
 }
 
 .zh-backtop:hover {
-    color: var(--zh-accent);
+    background: var(--zh-accent-2-strong);
+    color: var(--zh-on-accent-2);
 }
 
 /* ---------- 灯箱（由 main.js 创建） ---------- */
@@ -1468,9 +1548,9 @@ button {
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    background: rgba(8, 10, 14, .9);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    background: rgba(10, 12, 14, .88);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
     cursor: zoom-out;
     animation: zh-fade-in .2s ease;
 }
@@ -1480,7 +1560,7 @@ button {
     max-height: 90vh;
     width: auto;
     height: auto;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 24px 64px rgba(0, 0, 0, .5);
     animation: zh-zoom-in .22s ease;
     cursor: default;
@@ -1538,8 +1618,16 @@ button {
     .zh-item > a {
         justify-content: space-between;
         padding: .7em .9em;
-        border-radius: 10px;
+        border-radius: 8px;
         font-size: 1rem;
+    }
+
+    .zh-item.active > a {
+        background: var(--zh-accent-weak);
+    }
+
+    .zh-item.active > a::after {
+        display: none;
     }
 
     .zh-submenu {
@@ -1586,7 +1674,8 @@ button {
 @media (max-width: 620px) {
     :root {
         --zh-header-height: 64px;
-        --zh-radius: 16px;
+        --zh-radius: 12px;
+        --zh-radius-sm: 8px;
     }
 
     .zh-main {
@@ -1652,7 +1741,7 @@ button {
         align-self: start;
         width: 100%;
         aspect-ratio: 1;
-        border-radius: 10px;
+        border-radius: var(--zh-radius-sm);
     }
 
     .zh-card-body {
@@ -1696,9 +1785,12 @@ button {
         -webkit-line-clamp: 2;
     }
 
-    .zh-page-head,
+    .zh-page-head {
+        padding: 0 0 1rem;
+    }
+
     .zh-timeline {
-        padding: 1.25rem;
+        padding: 1rem 1.25rem;
     }
 
     .zh-page-title {
@@ -1706,7 +1798,7 @@ button {
     }
 
     .zh-post {
-        padding: 1.25rem;
+        padding: 1.15rem;
     }
 
     .zh-post-head {
@@ -1720,7 +1812,7 @@ button {
 
     .zh-content {
         font-size: 1rem;
-        line-height: 1.9;
+        line-height: 1.85;
     }
 
     .zh-respond {

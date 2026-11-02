@@ -120,8 +120,8 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <link rel="icon" href="<?php echo htmlspecialchars($zh_favicon, ENT_QUOTES, 'UTF-8'); ?>">
 <?php endif; ?>
 
-<meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#10151f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
 
 <meta property="og:site_name" content="<?php echo htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8'); ?>">
 <meta property="og:title" content="<?php echo htmlspecialchars($zh_title, ENT_QUOTES, 'UTF-8'); ?>">
