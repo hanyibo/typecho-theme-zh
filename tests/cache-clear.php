@@ -3,9 +3,11 @@
 namespace Typecho {
     class Widget
     {
+        public static $options;
+
         public static function widget($name)
         {
-            return (object) array('secret' => 'test-site-secret');
+            return self::$options;
         }
     }
 }
@@ -60,6 +62,17 @@ namespace {
     $root = sys_get_temp_dir() . '/zh-cache-test-' . bin2hex(random_bytes(8));
     define('__TYPECHO_ROOT_DIR__', $root);
     require dirname(__DIR__) . '/functions.php';
+
+    \Typecho\Widget::$options = (object) array(
+        'secret' => 'test-site-secret',
+        'siteUrl' => 'https://example.com/',
+        'cacheDriver' => 'file',
+        'redisHost' => '127.0.0.1',
+        'redisPort' => '6379',
+        'redisPassword' => '',
+        'redisDatabase' => '0',
+        'redisPrefix' => 'zh:',
+    );
 
     try {
         mkdir(ZH_CACHE_DIR, 0755, true);

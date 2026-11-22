@@ -187,10 +187,67 @@ function themeConfig($form)
     );
     $form->addInput($cacheTtl->addRule('isInteger', _t('缓存有效期必须是非负整数')));
 
+    $cacheDriver = new \Typecho\Widget\Helper\Form\Element\Radio(
+        'cacheDriver',
+        array('file' => _t('文件'), 'redis' => _t('Redis')),
+        'file',
+        _t('缓存存储方式'),
+        _t('文件缓存开箱即用；Redis 需要安装 phpredis 扩展并填写下方连接信息，连接失败时自动回退到文件缓存')
+    );
+    $form->addInput($cacheDriver);
+
+    $redisHost = new \Typecho\Widget\Helper\Form\Element\Text(
+        'redisHost',
+        null,
+        '127.0.0.1',
+        _t('Redis 主机'),
+        _t('Redis 服务地址，留空使用 127.0.0.1')
+    );
+    $form->addInput($redisHost);
+
+    $redisPort = new \Typecho\Widget\Helper\Form\Element\Text(
+        'redisPort',
+        null,
+        '6379',
+        _t('Redis 端口'),
+        _t('留空或非法值使用 6379')
+    );
+    $form->addInput($redisPort);
+
+    $redisPassword = new \Typecho\Widget\Helper\Form\Element\Text(
+        'redisPassword',
+        null,
+        '',
+        _t('Redis 密码'),
+        _t('没有密码请留空；密码仅保存在站点数据库中，不会写入前台页面')
+    );
+    $form->addInput($redisPassword);
+
+    $redisDatabase = new \Typecho\Widget\Helper\Form\Element\Text(
+        'redisDatabase',
+        null,
+        '0',
+        _t('Redis 数据库'),
+        _t('使用的库编号（默认 0），留空或非法值使用 0')
+    );
+    $form->addInput($redisDatabase);
+
+    $redisPrefix = new \Typecho\Widget\Helper\Form\Element\Text(
+        'redisPrefix',
+        null,
+        'zh:',
+        _t('Redis 键前缀'),
+        _t('用于隔离缓存键；多个站点共用一个 Redis 时会自动追加站点标识')
+    );
+    $form->addInput($redisPrefix);
+
     /* 缓存管理：纯展示行。用 addItem 而非 addInput，不会注册为表单输入项，
        保存设置时不会被写入主题选项（见 \Widget\Themes\Edit 的 getAllRequest） */
     $cacheCount = count(glob(ZH_CACHE_DIR . '*.html') ?: array())
         - (is_file(ZH_CACHE_DIR . 'index.html') ? 1 : 0);
+    $cacheStatus = zh_cache_redis_selected()
+        ? zh_cache_redis_status() . ($cacheCount > 0 ? ' ' . _t('另有文件缓存 %d 个。', $cacheCount) : '')
+        : _t('当前文件缓存 %d 个。', $cacheCount);
     $cacheClearUrl = \Typecho\Common::url(
         'options-theme.php',
         (string) \Typecho\Widget::widget('\Widget\Options')->adminUrl
@@ -209,7 +266,7 @@ function themeConfig($form)
         ($cacheClearMessage !== null
             ? '<strong role="status">' . htmlspecialchars($cacheClearMessage, ENT_QUOTES, 'UTF-8') . '</strong><br>'
             : '')
-        . _t('当前缓存文件 %d 个。', $cacheCount)
+        . htmlspecialchars($cacheStatus, ENT_QUOTES, 'UTF-8')
         . '<button type="button" class="btn" id="zh-cache-clear" data-zh-cache-url="'
         . htmlspecialchars($cacheClearUrl, ENT_QUOTES, 'UTF-8') . '" data-zh-cache-token="'
         . htmlspecialchars(zh_cache_clear_token(), ENT_QUOTES, 'UTF-8') . '" onclick="'
@@ -505,7 +562,9 @@ function zh_parse_lines($raw, $minParts = 2)
 /* ===================== 页面缓存 ===================== */
 
 /**
- * 以文件方式缓存模板中 <main> 区域的输出（参考 rizhi 主题的 StartCache/EndCache 思路）。
+ * 缓存模板中 <main> 区域的输出（参考 rizhi 主题的 StartCache/EndCache 思路）。
+ * 支持文件与 Redis 两种存储，由主题设置 cacheDriver 选择；Redis 未安装
+ * phpredis 扩展或连接失败时自动回退文件缓存。
  *
  * 与 rizhi 直接按 REQUEST_URI 哈希 + 定时过期不同，这里在命中时先校验
  * 「内容指纹」：全站文章篇数、modified 之和、评论总数、分类/标签变动序号
@@ -525,6 +584,99 @@ function zh_parse_lines($raw, $minParts = 2)
 
 define('ZH_CACHE_DIR', __TYPECHO_ROOT_DIR__ . '/usr/cache/ZH-theme/');
 define('ZH_CACHE_TTL_DEFAULT', 3600);
+define('ZH_CACHE_REDIS_TIMEOUT', 1.0);
+define('ZH_CACHE_REDIS_PREFIX_DEFAULT', 'zh:');
+
+/** 是否配置为 Redis 存储（不检测扩展与连通性） */
+function zh_cache_redis_selected()
+{
+    $options = \Typecho\Widget::widget('\Widget\Options');
+    return (string) $options->cacheDriver === 'redis';
+}
+
+/** 当前实际生效的存储：redis（已连通）或 file（默认 / 自动回退） */
+function zh_cache_driver()
+{
+    if (zh_cache_redis_selected() && zh_cache_redis() !== null) {
+        return 'redis';
+    }
+    return 'file';
+}
+
+/**
+ * 获取 Redis 连接（同一请求内复用）。
+ * 未安装 phpredis、配置非法或连接失败时返回 null，调用方自动回退文件缓存。
+ */
+function zh_cache_redis()
+{
+    static $redis = null;
+    static $tried = false;
+
+    if ($tried) {
+        return $redis;
+    }
+    $tried = true;
+
+    if (!class_exists('Redis')) {
+        return $redis = null;
+    }
+
+    $options = \Typecho\Widget::widget('\Widget\Options');
+
+    $host = trim((string) $options->redisHost);
+    if ($host === '') {
+        $host = '127.0.0.1';
+    }
+    $port = (int) trim((string) $options->redisPort);
+    if ($port < 1 || $port > 65535) {
+        $port = 6379;
+    }
+
+    try {
+        $client = new \Redis();
+
+        if (!@$client->connect($host, $port, ZH_CACHE_REDIS_TIMEOUT)) {
+            return $redis = null;
+        }
+        $client->setOption(\Redis::OPT_READ_TIMEOUT, ZH_CACHE_REDIS_TIMEOUT);
+
+        $password = (string) $options->redisPassword;
+        if ($password !== '' && !@$client->auth($password)) {
+            return $redis = null;
+        }
+
+        $database = (int) trim((string) $options->redisDatabase);
+        if ($database > 0 && !@$client->select($database)) {
+            return $redis = null;
+        }
+
+        $redis = $client;
+    } catch (\Throwable $e) {
+        $redis = null;
+    }
+
+    return $redis;
+}
+
+/** 站点专属键前缀：用户前缀 + 站点哈希，多个站点共用 Redis 时互不干扰 */
+function zh_cache_prefix()
+{
+    $options = \Typecho\Widget::widget('\Widget\Options');
+
+    $prefix = preg_replace('/[^A-Za-z0-9:_.\-]/', '', (string) $options->redisPrefix);
+    if ($prefix === null || trim($prefix, ':') === '') {
+        $prefix = ZH_CACHE_REDIS_PREFIX_DEFAULT;
+    }
+
+    return rtrim($prefix, ':') . ':' . substr(md5((string) $options->siteUrl), 0, 8) . ':';
+}
+
+/** Redis 缓存键（与文件缓存按 scope + URI + 内容指纹一一对应） */
+function zh_cache_redis_key($scope)
+{
+    $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '/';
+    return zh_cache_prefix() . $scope . '_' . md5($uri) . '_' . zh_cache_fingerprint();
+}
 
 /** 是否启用页面缓存（后台登录用户跳过，保证所见即所得） */
 function zh_cache_enabled($scope)
@@ -632,6 +784,140 @@ function zh_cache_path($scope)
 }
 
 /**
+ * 读取缓存，命中返回 HTML 并写入 $mtime（生成时间）。
+ * Redis 模式连通失败时自动按文件缓存读取；配置为 Redis 且连接正常时不读旧文件缓存。
+ */
+function zh_cache_read($scope, &$mtime = null)
+{
+    $mtime = null;
+
+    if (zh_cache_driver() === 'redis') {
+        try {
+            $redis = zh_cache_redis();
+            $key = zh_cache_redis_key($scope);
+            $content = $redis->get($key);
+            if (is_string($content) && $content !== '') {
+                $ttl = (int) $redis->ttl($key);
+                $mtime = $ttl > 0 ? time() - (zh_cache_ttl() - $ttl) : time();
+                return $content;
+            }
+            return false;
+        } catch (\Throwable $e) {
+            // 读取中断线：本次请求退回文件缓存
+        }
+    }
+
+    $path = zh_cache_path($scope);
+    if (is_file($path) && (time() - (int) filemtime($path)) <= zh_cache_ttl()) {
+        $content = file_get_contents($path);
+        if ($content !== false) {
+            $mtime = (int) filemtime($path);
+            return $content;
+        }
+    }
+    return false;
+}
+
+/** 写入 Redis 缓存（TTL 由 Redis 服务端自动过期，无需文件 GC） */
+function zh_cache_redis_set($scope, $content)
+{
+    $redis = zh_cache_redis();
+    if ($redis === null) {
+        return false;
+    }
+    try {
+        return (bool) $redis->setex(zh_cache_redis_key($scope), zh_cache_ttl(), $content);
+    } catch (\Throwable $e) {
+        return false;
+    }
+}
+
+/** 统计本站前缀下的 Redis 缓存键数量；连接或扫描失败返回 null */
+function zh_cache_redis_count()
+{
+    $redis = zh_cache_redis();
+    if ($redis === null) {
+        return null;
+    }
+    try {
+        $pattern = zh_cache_prefix() . '*';
+        $iterator = null;
+        $count = 0;
+        $loops = 0;
+        do {
+            $keys = $redis->scan($iterator, $pattern, 500);
+            if (is_array($keys)) {
+                $count += count($keys);
+            }
+            $loops++;
+        } while ($iterator !== 0 && $iterator !== null && $loops < 200);
+        return $count;
+    } catch (\Throwable $e) {
+        return null;
+    }
+}
+
+/** 扫描并删除本站前缀下的 Redis 缓存键；$failed 置 1 表示中途出错 */
+function zh_cache_redis_clear(&$failed = 0)
+{
+    $failed = 0;
+    $redis = zh_cache_redis();
+    if ($redis === null) {
+        $failed = 1;
+        return 0;
+    }
+
+    $pattern = zh_cache_prefix() . '*';
+    $count = 0;
+    try {
+        /* SCAN 遍历期间删除键可能漏掉个别键，重复扫描直到一轮没有任何删除 */
+        for ($pass = 0; $pass < 5; $pass++) {
+            $iterator = null;
+            $deletedThisPass = 0;
+            $loops = 0;
+            do {
+                $keys = $redis->scan($iterator, $pattern, 200);
+                if (is_array($keys) && $keys !== array()) {
+                    $deleted = $redis->del($keys);
+                    $deletedThisPass += is_int($deleted) ? $deleted : 0;
+                }
+                $loops++;
+            } while ($iterator !== 0 && $iterator !== null && $loops < 500);
+            $count += $deletedThisPass;
+            if ($deletedThisPass === 0) {
+                break;
+            }
+        }
+    } catch (\Throwable $e) {
+        $failed = 1;
+    }
+    return $count;
+}
+
+/** 后台缓存管理行显示的 Redis 状态（只显示主机端口，不输出密码） */
+function zh_cache_redis_status()
+{
+    $options = \Typecho\Widget::widget('\Widget\Options');
+
+    $host = trim((string) $options->redisHost);
+    $host = $host !== '' ? $host : '127.0.0.1';
+    $port = (int) trim((string) $options->redisPort);
+    $port = ($port > 0 && $port <= 65535) ? $port : 6379;
+    $database = max(0, (int) trim((string) $options->redisDatabase));
+
+    if (!class_exists('Redis')) {
+        return _t('未检测到 phpredis 扩展，Redis 缓存不可用，当前已回退到文件缓存。');
+    }
+    if (zh_cache_redis() === null) {
+        return _t('无法连接 Redis（%s:%d），当前已回退到文件缓存。', $host, $port);
+    }
+
+    $count = zh_cache_redis_count();
+    return _t('Redis 已连接：%s:%d / 数据库 %d，当前缓存键 %s 个。', $host, $port, $database,
+        $count === null ? '?' : (string) $count);
+}
+
+/**
  * 尝试输出缓存；命中返回 true（模板应跳过区域渲染），
  * 未命中开启输出缓冲并返回 false（模板继续正常渲染，结尾调 zh_cache_end）。
  * 仅缓存 GET 请求；POST（提交评论等）一律实时渲染。
@@ -649,16 +935,14 @@ function zh_cache_start($scope, $widget = null)
         return false;
     }
 
-    $path = zh_cache_path($scope);
-    if (is_file($path) && (time() - (int) filemtime($path)) <= zh_cache_ttl()) {
-        $content = file_get_contents($path);
-        if ($content !== false) {
-            /* 命中标记（调试用）：实时渲染时无此注释；不需要时删除下一行即可 */
-            echo '<!-- ZH-CACHE HIT ' . $scope . ' @ ' . gmdate('Y-m-d H:i:s', (int) filemtime($path))
-                . ' UTC (TTL ' . zh_cache_ttl() . 's) -->' . "\n";
-            echo $content;
-            return true;
-        }
+    $mtime = null;
+    $content = zh_cache_read($scope, $mtime);
+    if ($content !== false) {
+        /* 命中标记（调试用）：实时渲染时无此注释；不需要时删除下面两行输出即可 */
+        echo '<!-- ZH-CACHE HIT ' . $scope . ' @ ' . gmdate('Y-m-d H:i:s', (int) $mtime)
+            . ' UTC (TTL ' . zh_cache_ttl() . 's, ' . zh_cache_driver() . ') -->' . "\n";
+        echo $content;
+        return true;
     }
 
     ob_start();
@@ -675,7 +959,7 @@ function zh_cache_protect_row($widget)
     }
 }
 
-/** 结束缓存区域：把缓冲内容落盘并输出 */
+/** 结束缓存区域：把缓冲内容写入当前缓存后端并输出 */
 function zh_cache_end()
 {
     if (!isset($GLOBALS['zh_cache_scope'])) {
@@ -695,6 +979,11 @@ function zh_cache_end()
     $nostore = !empty($GLOBALS['zh_cache_nostore']);
     unset($GLOBALS['zh_cache_nostore']);
     if ($nostore) {
+        return;
+    }
+
+    if (zh_cache_driver() === 'redis') {
+        zh_cache_redis_set($scope, $content);
         return;
     }
 
@@ -754,30 +1043,46 @@ function zh_cache_gc()
     }
 }
 
-/** 手动清空全部页面缓存；$failed 为删除失败数，-1 表示目录无法读取。 */
-function zh_cache_clear(&$failed = 0)
+/**
+ * 手动清空全部页面缓存。
+ * $failed 为文件删除失败数（-1 表示目录无法读取）；$redisUnavailable 为配置了
+ * Redis 但无法连接。文件缓存始终清理，Redis 仅在选中该存储方式时清理。
+ */
+function zh_cache_clear(&$failed = 0, &$redisUnavailable = false)
 {
     $failed = 0;
-    if (!is_dir(ZH_CACHE_DIR)) {
-        return 0;
-    }
-    $files = is_readable(ZH_CACHE_DIR) ? glob(ZH_CACHE_DIR . '*.html') : false;
-    if ($files === false) {
-        $failed = -1;
-        return 0;
-    }
+    $redisUnavailable = false;
     $count = 0;
-    foreach ($files as $file) {
-        /* 防直访的空 index.html 与 .htaccess 一样属于保护文件，保留 */
-        if (basename($file) === 'index.html') {
-            continue;
-        }
-        if (@unlink($file)) {
-            $count++;
+
+    if (is_dir(ZH_CACHE_DIR)) {
+        $files = is_readable(ZH_CACHE_DIR) ? glob(ZH_CACHE_DIR . '*.html') : false;
+        if ($files === false) {
+            $failed = -1;
         } else {
-            $failed++;
+            foreach ($files as $file) {
+                /* 防直访的空 index.html 与 .htaccess 一样属于保护文件，保留 */
+                if (basename($file) === 'index.html') {
+                    continue;
+                }
+                if (@unlink($file)) {
+                    $count++;
+                } else {
+                    $failed++;
+                }
+            }
         }
     }
+
+    if (zh_cache_redis_selected()) {
+        if (zh_cache_redis() === null) {
+            $redisUnavailable = true;
+        } else {
+            $redisFailed = 0;
+            $count += zh_cache_redis_clear($redisFailed);
+            $failed += $redisFailed;
+        }
+    }
+
     return $count;
 }
 
@@ -811,12 +1116,19 @@ function zh_cache_maybe_clear()
         return _t('清理失败：无法验证管理员身份，请重新登录后重试。');
     }
 
-    $count = zh_cache_clear($failed);
+    $redisUnavailable = false;
+    $count = zh_cache_clear($failed, $redisUnavailable);
+    if ($redisUnavailable) {
+        return _t('Redis 不可用（未安装 phpredis 扩展或连接失败），未能清理 Redis 缓存；已清理 %d 个文件缓存。', $count);
+    }
     if ($failed < 0) {
         return _t('清理失败：无法读取缓存目录，请检查 usr/cache/ZH-theme/ 的权限。');
     }
     if ($failed > 0) {
-        return _t('已清理 %d 个页面缓存文件，另有 %d 个清理失败，请检查 usr/cache/ZH-theme/ 的权限。', $count, $failed);
+        return _t('已清理 %d 个页面缓存文件，另有 %d 个清理失败，请检查缓存目录或 Redis 连接。', $count, $failed);
+    }
+    if (zh_cache_redis_selected()) {
+        return _t('已清空 %d 个页面缓存（文件与 Redis）。', $count);
     }
     return _t('已清空 %d 个页面缓存文件。', $count);
 }
