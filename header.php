@@ -95,6 +95,8 @@ $zh_og_image = $zh_is_single ? zh_thumb_src($this) : zh_safe_url((string) $optio
 if ($zh_og_image === '#') {
     $zh_og_image = $options->themeUrl . '/assets/img/default-thumb.svg';
 }
+/* og:image 必须是绝对地址，正文图片可能是 /usr/uploads/... 这类站内相对路径 */
+$zh_og_image = zh_absolute_url($zh_og_image);
 
 /* 代码高亮资源按需加载：正文包含 <pre> 代码块时才输出 Prism（文章与独立页面） */
 $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== false;
@@ -105,7 +107,7 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <meta charset="<?php $options->charset(); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title><?php echo htmlspecialchars($zh_title, ENT_QUOTES, 'UTF-8'); ?></title>
-<?php $this->header('description=&keywords=&author=&generator=&template=&pingback=&wlw=&xmlrpc=&rss1=&atom='); ?>
+<?php zh_typecho_header($this); ?>
 <meta name="description" content="<?php echo htmlspecialchars($zh_desc, ENT_QUOTES, 'UTF-8'); ?>">
 <?php if ($zh_keywords !== ''): ?>
 <meta name="keywords" content="<?php echo htmlspecialchars($zh_keywords, ENT_QUOTES, 'UTF-8'); ?>">
@@ -137,6 +139,7 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <?php endif; ?>
+<meta name="twitter:domain" content="<?php echo htmlspecialchars((string) $options->siteDomain, ENT_QUOTES, 'UTF-8'); ?>">
 
 <?php if ($zh_is_post): ?>
 <script type="application/ld+json"><?php zh_json_ld(array(
@@ -144,7 +147,7 @@ $zh_load_prism = $zh_is_single && stripos((string) $this->content, '<pre') !== f
     '@type' => 'BlogPosting',
     'headline' => (string) $this->title,
     'description' => $zh_desc,
-    'image' => zh_thumb_src($this),
+    'image' => zh_absolute_url(zh_thumb_src($this)),
     'datePublished' => date('c', $this->created),
     'dateModified' => date('c', $this->modified),
     'author' => array('@type' => 'Person', 'name' => (string) $this->author->screenName),

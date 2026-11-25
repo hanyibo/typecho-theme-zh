@@ -367,6 +367,18 @@ function zh_link_tag($matches)
     }
     if (!preg_match('/(?<![\w-])rel\s*=/i', $attrs)) {
         $attrs .= ' rel="noopener"';
+    } else {
+        /* 已有 rel（如 nofollow）时也要补上 noopener，避免外部页面通过 window.opener 反向控制本站 */
+        $attrs = preg_replace_callback('/(?<![\w-])rel\s*=\s*(["\'])([^"\']*)\1/i', function ($m) {
+            $rels = preg_split('/\s+/', trim($m[2]), -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($rels as $rel) {
+                if (in_array(strtolower($rel), array('noopener', 'noreferrer'), true)) {
+                    return $m[0];
+                }
+            }
+            $rels[] = 'noopener';
+            return 'rel=' . $m[1] . implode(' ', $rels) . $m[1];
+        }, $attrs, 1);
     }
     return '<a' . $attrs . '>' . $inner . '</a>';
 }
@@ -540,6 +552,41 @@ function zh_safe_url($url)
     return $url;
 }
 
+/**
+ * 把站内相对地址补全为绝对地址。
+ * og:image 与 JSON-LD 要求绝对 URL，正文里的 /usr/uploads/xxx.png 需要补站点前缀。
+ */
+function zh_absolute_url($url)
+{
+    $url = trim((string) $url);
+    if ($url === '' || $url === '#') {
+        return $url;
+    }
+    if (preg_match('#^https?://#i', $url)) {
+        return $url;
+    }
+    if (strpos($url, '//') === 0) {
+        return 'https:' . $url;
+    }
+
+    $siteUrl = (string) \Typecho\Widget::widget('\Widget\Options')->siteUrl;
+    return rtrim($siteUrl, '/') . '/' . ltrim($url, '/');
+}
+
+/**
+ * 输出 Typecho 核心 head 标签。
+ * 关闭核心的 description / keywords / Open Graph（主题自行输出更完整的版本），
+ * 并移除 single 页由请求 Host 拼出的 canonical，避免与主题的站点域名 canonical 重复。
+ */
+function zh_typecho_header($archive)
+{
+    ob_start();
+    $archive->header('description=&keywords=&author=&generator=&template=&pingback=&wlw=&xmlrpc=&rss1=&atom=&social=');
+    $header = (string) ob_get_clean();
+
+    echo preg_replace('#\s*<link\b[^>]*\brel=(["\'])canonical\1[^>]*>\s*#i', "\n", $header);
+}
+
 /** 解析「名称|链接|描述」行格式为二维数组 */
 function zh_parse_lines($raw, $minParts = 2)
 {
@@ -671,11 +718,67 @@ function zh_cache_prefix()
     return rtrim($prefix, ':') . ':' . substr(md5((string) $options->siteUrl), 0, 8) . ':';
 }
 
-/** Redis 缓存键（与文件缓存按 scope + URI + 内容指纹一一对应） */
+/**
+ * 当前请求的 Host（小写，剔除非法字符）。
+ * Host 头完全由客户端控制，不能直接拼进缓存键；调用方还会用白名单校验。
+ */
+function zh_cache_request_host()
+{
+    $host = isset($_SERVER['HTTP_HOST']) ? (string) $_SERVER['HTTP_HOST'] : '';
+    if ($host === '' && isset($_SERVER['SERVER_NAME'])) {
+        $host = (string) $_SERVER['SERVER_NAME'];
+    }
+
+    return (string) preg_replace('/[^a-z0-9.:\[\]-]/', '', strtolower(trim($host)));
+}
+
+/** 当前请求协议（与 Typecho 生成绝对链接时的判断保持一致） */
+function zh_cache_request_scheme()
+{
+    $https = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+        || (isset($_SERVER['SERVER_PORT']) && 443 === (int) $_SERVER['SERVER_PORT']);
+
+    return $https ? 'https' : 'http';
+}
+
+/**
+ * 仅对站点自身域名启用页面缓存。
+ * Typecho 的文章链接由请求 Host 生成，若允许任意 Host 读写同一份缓存，
+ * 外部泛解析域名（如 910vr.com）只要访问一次，就会把带该域名的 HTML
+ * 写进缓存，再被正常域名的访客命中。这里按站点域名（允许 www 前缀差异）
+ * 设置白名单，并让缓存键带上域名，双重隔离。
+ */
+function zh_cache_host_allowed()
+{
+    $host = (string) preg_replace('/:\d+$/', '', zh_cache_request_host());
+    if ($host === '') {
+        return false;
+    }
+
+    $siteHost = strtolower((string) parse_url(
+        (string) \Typecho\Widget::widget('\Widget\Options')->siteUrl,
+        PHP_URL_HOST
+    ));
+    if ($siteHost === '') {
+        return false;
+    }
+
+    return $host === $siteHost
+        || preg_replace('/^www\./', '', $host) === preg_replace('/^www\./', '', $siteHost);
+}
+
+/** 缓存键中的域名标识（含协议与端口，www 与非 www 各自独立） */
+function zh_cache_host_key()
+{
+    return substr(md5(zh_cache_request_scheme() . '://' . zh_cache_request_host()), 0, 8);
+}
+
+/** Redis 缓存键（与文件缓存按 scope + URI + 域名 + 内容指纹一一对应） */
 function zh_cache_redis_key($scope)
 {
     $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '/';
-    return zh_cache_prefix() . $scope . '_' . md5($uri) . '_' . zh_cache_fingerprint();
+    return zh_cache_prefix() . $scope . '_' . md5($uri) . '_' . zh_cache_host_key() . '_' . zh_cache_fingerprint();
 }
 
 /** 是否启用页面缓存（后台登录用户跳过，保证所见即所得） */
@@ -762,6 +865,10 @@ function zh_cache_fingerprint()
         'pages=' . ($pages ? (int) $pages['mtime'] : 0),
         'theme=' . md5(json_encode(array(
             $options->cacheTtl,
+            /* 站点标题/描述/每页篇数会出现在缓存的列表区域，变更后必须重建 */
+            $options->title,
+            $options->description,
+            $options->pageSize,
             $options->friendLinks,
             $options->extraNav,
             $options->defaultThumb,
@@ -775,11 +882,11 @@ function zh_cache_fingerprint()
     return $memo = substr(md5($raw), 0, 10);
 }
 
-/** 当前请求对应的缓存文件路径（按 scope + 路径 + 分页参数区分） */
+/** 当前请求对应的缓存文件路径（按 scope + 路径 + 域名 + 分页参数区分） */
 function zh_cache_path($scope)
 {
     $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '/';
-    $key = $scope . '_' . md5($uri) . '_' . zh_cache_fingerprint();
+    $key = $scope . '_' . md5($uri) . '_' . zh_cache_host_key() . '_' . zh_cache_fingerprint();
     return ZH_CACHE_DIR . $key . '.html';
 }
 
@@ -928,6 +1035,11 @@ function zh_cache_redis_status()
 function zh_cache_start($scope, $widget = null)
 {
     if (!zh_cache_enabled($scope) || ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+        return false;
+    }
+
+    /* 非本站域名（Host 头伪造 / 泛解析镜像）完全不读写缓存，从源头阻断缓存污染 */
+    if (!zh_cache_host_allowed()) {
         return false;
     }
 
